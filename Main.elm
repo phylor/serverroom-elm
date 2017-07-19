@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (..)
+import Html
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Tuple exposing (first, second)
@@ -25,10 +25,11 @@ type InfrastructureType = Server
 type alias Model =
   { playerPosition : Position
   , infrastructure : List Infrastructure
+  , money : Int
   }
 
 init =
-  ( Model (1, 1) [], Cmd.none )
+  ( Model (1, 1) [] 100000, Cmd.none )
 
 update msg model =
   case msg of
@@ -45,7 +46,10 @@ update msg model =
       ( { model | playerPosition = Player.moveDown model.playerPosition }, Cmd.none )
 
     PressesKey 66 ->
-      ( { model | infrastructure = buildServer model.infrastructure model.playerPosition }, Cmd.none )
+      if model.money >= 20000 then
+        ( { model | infrastructure = buildServer model.infrastructure model.playerPosition, money = model.money - 20000 }, Cmd.none )
+      else
+        ( model, Cmd.none )
 
     PressesKey _ ->
       ( model, Cmd.none )
@@ -55,11 +59,12 @@ buildServer infrastructure position =
   Infrastructure Server position :: infrastructure
 
 view model =
-  svg [ width "500", height "500" ]
+  svg [ width "600", height "500" ]
     [ renderBackground
     , Grid.render
     , renderInfrastructure model.infrastructure
     , renderPlayer model.playerPosition
+    , renderMoney model.money
     ]
 
 styl =
@@ -78,6 +83,9 @@ renderPlayer playerPosition =
 renderInfrastructure infrastructure =
   g []
     (List.map (\item -> image [ x <| toString <| (first item.position - 1) * 50, y <| toString <| (second item.position - 1) * 50, width "50", height "50", xlinkHref "resources/server.svg" ] []) infrastructure)
+
+renderMoney money =
+  text_ [ x "525", y "25" ] [ text <| String.cons '$' <| toString money]
 
 subscriptions model =
   Keyboard.ups (\code -> PressesKey code)
