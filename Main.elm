@@ -8,6 +8,7 @@ import Keyboard exposing (..)
 import Char exposing (fromCode)
 
 import Grid exposing (render)
+import Player exposing (moveLeft, moveUp, moveRight, moveDown)
 
 type Msg = PressesKey Keyboard.KeyCode
 
@@ -24,31 +25,19 @@ init =
 update msg model =
   case msg of
     PressesKey 37 ->
-      ( { model | playerPosition = playerMoveLeft model.playerPosition }, Cmd.none )
+      ( { model | playerPosition = Player.moveLeft model.playerPosition }, Cmd.none )
 
     PressesKey 38 ->
-      ( { model | playerPosition = playerMoveUp model.playerPosition }, Cmd.none )
+      ( { model | playerPosition = Player.moveUp model.playerPosition }, Cmd.none )
 
     PressesKey 39 ->
-      ( { model | playerPosition = playerMoveRight model.playerPosition }, Cmd.none )
+      ( { model | playerPosition = Player.moveRight model.playerPosition }, Cmd.none )
 
     PressesKey 40 ->
-      ( { model | playerPosition = playerMoveDown model.playerPosition }, Cmd.none )
+      ( { model | playerPosition = Player.moveDown model.playerPosition }, Cmd.none )
 
     PressesKey _ ->
       ( model, Cmd.none )
-
-playerMoveLeft ( x, y ) =
-  ( x - 1, y )
-
-playerMoveUp ( x, y ) =
-  ( x , y - 1 )
-
-playerMoveRight ( x, y ) =
-  ( x + 1, y )
-
-playerMoveDown ( x, y ) =
-  ( x, y + 1 )
 
 view model =
   svg [ width "500", height "500" ]
