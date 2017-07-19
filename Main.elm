@@ -34,16 +34,28 @@ init =
 update msg model =
   case msg of
     PressesKey 37 ->
-      ( { model | playerPosition = Player.moveLeft model.playerPosition }, Cmd.none )
+      movePlayerLeft model
+
+    PressesKey 72 ->
+      movePlayerLeft model
 
     PressesKey 38 ->
-      ( { model | playerPosition = Player.moveUp model.playerPosition }, Cmd.none )
+      movePlayerUp model
+
+    PressesKey 75 ->
+      movePlayerUp model
 
     PressesKey 39 ->
-      ( { model | playerPosition = Player.moveRight model.playerPosition }, Cmd.none )
+      movePlayerRight model
+
+    PressesKey 76 ->
+      movePlayerRight model
 
     PressesKey 40 ->
-      ( { model | playerPosition = Player.moveDown model.playerPosition }, Cmd.none )
+      movePlayerDown model
+
+    PressesKey 74 ->
+      movePlayerDown model
 
     PressesKey 66 ->
       if model.money >= 20000 then
@@ -53,6 +65,18 @@ update msg model =
 
     PressesKey _ ->
       ( model, Cmd.none )
+
+movePlayerLeft model =
+  ( { model | playerPosition = Player.moveLeft model.playerPosition }, Cmd.none )
+
+movePlayerDown model =
+  ( { model | playerPosition = Player.moveDown model.playerPosition }, Cmd.none )
+
+movePlayerUp model =
+  ( { model | playerPosition = Player.moveUp model.playerPosition }, Cmd.none )
+
+movePlayerRight model =
+  ( { model | playerPosition = Player.moveRight model.playerPosition }, Cmd.none )
 
 buildServer : List Infrastructure -> Position -> List Infrastructure
 buildServer infrastructure position =
