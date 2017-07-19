@@ -58,8 +58,8 @@ view model =
   svg [ width "500", height "500" ]
     [ renderBackground
     , Grid.render
-    , renderPlayer model.playerPosition
     , renderInfrastructure model.infrastructure
+    , renderPlayer model.playerPosition
     ]
 
 styl =
@@ -77,7 +77,7 @@ renderPlayer playerPosition =
 
 renderInfrastructure infrastructure =
   g []
-    (List.map (\item -> image [ x <| toString <| (first item.position - 1) * 50, y <| toString <| (second item.position - 1) * 50, width "45", height "45", xlinkHref "resources/server.svg" ] []) infrastructure)
+    (List.map (\item -> image [ x <| toString <| (first item.position - 1) * 50, y <| toString <| (second item.position - 1) * 50, width "50", height "50", xlinkHref "resources/server.svg" ] []) infrastructure)
 
 subscriptions model =
   Keyboard.ups (\code -> PressesKey code)
