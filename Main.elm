@@ -4,10 +4,12 @@ import Html exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Tuple exposing (first, second)
+import Keyboard exposing (..)
+import Char exposing (fromCode)
 
 import Grid exposing (render)
 
-type Msg = NoOp
+type Msg = PressesKey Keyboard.KeyCode
 
 type alias Position =
   ( Int, Int )
@@ -20,7 +22,33 @@ init =
   ( Model (1, 1), Cmd.none )
 
 update msg model =
-  ( model, Cmd.none )
+  case msg of
+    PressesKey 37 ->
+      ( { model | playerPosition = playerMoveLeft model.playerPosition }, Cmd.none )
+
+    PressesKey 38 ->
+      ( { model | playerPosition = playerMoveUp model.playerPosition }, Cmd.none )
+
+    PressesKey 39 ->
+      ( { model | playerPosition = playerMoveRight model.playerPosition }, Cmd.none )
+
+    PressesKey 40 ->
+      ( { model | playerPosition = playerMoveDown model.playerPosition }, Cmd.none )
+
+    PressesKey _ ->
+      ( model, Cmd.none )
+
+playerMoveLeft ( x, y ) =
+  ( x - 1, y )
+
+playerMoveUp ( x, y ) =
+  ( x , y - 1 )
+
+playerMoveRight ( x, y ) =
+  ( x + 1, y )
+
+playerMoveDown ( x, y ) =
+  ( x, y + 1 )
 
 view model =
   svg [ width "500", height "500" ]
@@ -42,9 +70,12 @@ renderPlayer playerPosition =
   in
     image [ x <| toString (playerX + 2), y <| toString (playerY + 2), width "45", height "45", xlinkHref "resources/engineer.svg" ] []
 
+subscriptions model =
+  Keyboard.ups (\code -> PressesKey code)
+
 main = Html.program
   { init = init
   , view = view
   , update = update
-  , subscriptions = \model -> Sub.none
+  , subscriptions = subscriptions
   }
