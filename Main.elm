@@ -11,6 +11,8 @@ import Grid exposing (render)
 import Player exposing (moveLeft, moveUp, moveRight, moveDown)
 
 type Msg = PressesKey Keyboard.KeyCode -- for KeyCodes check https://www.w3.org/2002/09/tests/keys.html
+         | InstallLinux Position
+         | InstallWindows Position
 
 type alias Position =
   ( Int, Int )
@@ -18,18 +20,33 @@ type alias Position =
 type alias Infrastructure =
   { object : InfrastructureType
   , position : Position
+  , system : Maybe OperatingSystem
   }
 
+type OperatingSystem = Linux
+                     | Windows
+
 type InfrastructureType = Server
+
+type alias Dialog =
+  { message : String
+  , options : List DialogOption
+  }
+
+type alias DialogOption =
+  { title : String
+  , action : Msg
+  }
 
 type alias Model =
   { playerPosition : Position
   , infrastructure : List Infrastructure
   , money : Int
+  , dialog : Maybe Dialog
   }
 
 init =
-  ( Model (1, 1) [] 100000, Cmd.none )
+  ( Model (1, 1) [] 100000 Nothing, Cmd.none )
 
 update msg model =
   case msg of
@@ -59,12 +76,61 @@ update msg model =
 
     PressesKey 66 ->
       if model.money >= 20000 then
-        ( { model | infrastructure = buildServer model.infrastructure model.playerPosition, money = model.money - 20000 }, Cmd.none )
+        ( { model | infrastructure = buildServer model.infrastructure model.playerPosition Nothing, money = model.money - 20000 }, Cmd.none )
       else
         ( model, Cmd.none )
 
+    PressesKey 73 ->
+      ( installDialog model, Cmd.none )
+
+    PressesKey 49 -> -- 1
+      case model.dialog of
+        Just dialog ->
+          let
+            option = List.head dialog.options
+          in
+            case option of
+              Just opt ->
+                update opt.action model
+              Nothing ->
+                ( model, Cmd.none )
+        Nothing ->
+          ( model, Cmd.none )
+
+    PressesKey 50 -> -- 2
+      case model.dialog of
+        Just dialog ->
+          let
+            option = List.head <| List.drop 1 dialog.options
+          in
+            case option of
+              Just opt ->
+                update opt.action model
+              Nothing ->
+                ( model, Cmd.none )
+        Nothing ->
+          ( model, Cmd.none )
+
+    InstallLinux position ->
+      ( { model | infrastructure = installLinux model.infrastructure position, dialog = Nothing }, Cmd.none )
+
+    InstallWindows position ->
+      ( { model | infrastructure = installWindows model.infrastructure position, dialog = Nothing }, Cmd.none )
+
     PressesKey _ ->
       ( model, Cmd.none )
+
+installLinux : List Infrastructure -> Position -> List Infrastructure
+installLinux infrastructure position =
+  List.map (\item -> if item.position == position then { item | system = Just Linux } else item) infrastructure
+
+installWindows : List Infrastructure -> Position -> List Infrastructure
+installWindows infrastructure position =
+  List.map (\item -> if item.position == position then { item | system = Just Windows } else item) infrastructure
+
+installDialog : Model -> Model
+installDialog model =
+  { model | dialog = Just <| Dialog "Which operating system do you want to install? 1: Linux 2: Windows" [ DialogOption "Linux" (InstallLinux model.playerPosition), DialogOption "Windows" (InstallWindows model.playerPosition) ] }
 
 movePlayerLeft model =
   ( { model | playerPosition = Player.moveLeft model.playerPosition }, Cmd.none )
@@ -78,9 +144,9 @@ movePlayerUp model =
 movePlayerRight model =
   ( { model | playerPosition = Player.moveRight model.playerPosition }, Cmd.none )
 
-buildServer : List Infrastructure -> Position -> List Infrastructure
-buildServer infrastructure position =
-  Infrastructure Server position :: infrastructure
+buildServer : List Infrastructure -> Position -> Maybe OperatingSystem -> List Infrastructure
+buildServer infrastructure position system =
+  Infrastructure Server position system :: infrastructure
 
 view model =
   svg [ width "600", height "500" ]
@@ -89,10 +155,23 @@ view model =
     , renderInfrastructure model.infrastructure
     , renderPlayer model.playerPosition
     , renderMoney model.money
+    , renderDialog model
     ]
 
 styl =
   Svg.Attributes.style
+
+renderDialog model =
+  case model.dialog of
+    Just dialog ->
+      g []
+        [ rect [ x "50", y "100", width "400", height "300", styl "fill: rgb(21, 3, 183)" ] []
+        , text_ [ x "75", y "125", styl "fill: rgb(144, 144, 181); font-family: sans-serif" ] [ text dialog.message ]
+        ]
+-- 144 144 181
+
+    Nothing ->
+      g [] []
 
 renderBackground =
   rect [ width "500", height "500", styl "fill: rgb(200, 200, 200)" ] []
@@ -106,7 +185,38 @@ renderPlayer playerPosition =
 
 renderInfrastructure infrastructure =
   g []
-    (List.map (\item -> image [ x <| toString <| (first item.position - 1) * 50, y <| toString <| (second item.position - 1) * 50, width "50", height "50", xlinkHref "resources/server.svg" ] []) infrastructure)
+    (List.map (\item -> 
+      case item.system of
+        Just Linux ->
+          g []
+            [ renderServer item.position
+            , renderLinux item.position
+            ]
+        Just Windows ->
+          g []
+            [ renderServer item.position
+            , renderWindows item.position
+            ]
+        Nothing ->
+          renderServer item.position
+    ) infrastructure)
+
+toPixelX : Position -> String
+toPixelX position =
+  toString <| (first position - 1) * 50
+
+toPixelY : Position -> String
+toPixelY position =
+  toString <| (second position - 1) * 50
+
+renderServer position =
+  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/server.svg" ] []
+
+renderLinux position =
+  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/linux.svg" ] []
+
+renderWindows position =
+  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/windows.svg" ] []
 
 renderMoney money =
   text_ [ x "525", y "25" ] [ text <| String.cons '$' <| toString money]
