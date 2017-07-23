@@ -6,6 +6,8 @@ import Svg.Attributes exposing (..)
 import Tuple exposing (first, second)
 import Keyboard exposing (..)
 import Char exposing (fromCode)
+import Infrastructure exposing (..)
+import Position exposing (..)
 
 import Grid exposing (render)
 import Player exposing (moveLeft, moveUp, moveRight, moveDown)
@@ -13,20 +15,6 @@ import Player exposing (moveLeft, moveUp, moveRight, moveDown)
 type Msg = PressesKey Keyboard.KeyCode -- for KeyCodes check https://www.w3.org/2002/09/tests/keys.html
          | InstallLinux Position
          | InstallWindows Position
-
-type alias Position =
-  ( Int, Int )
-
-type alias Infrastructure =
-  { object : InfrastructureType
-  , position : Position
-  , system : Maybe OperatingSystem
-  }
-
-type OperatingSystem = Linux
-                     | Windows
-
-type InfrastructureType = Server
 
 type alias Dialog =
   { message : String
@@ -120,14 +108,6 @@ update msg model =
     PressesKey _ ->
       ( model, Cmd.none )
 
-installLinux : List Infrastructure -> Position -> List Infrastructure
-installLinux infrastructure position =
-  List.map (\item -> if item.position == position then { item | system = Just Linux } else item) infrastructure
-
-installWindows : List Infrastructure -> Position -> List Infrastructure
-installWindows infrastructure position =
-  List.map (\item -> if item.position == position then { item | system = Just Windows } else item) infrastructure
-
 installDialog : Model -> Model
 installDialog model =
   { model | dialog = Just <| Dialog "Which operating system do you want to install? 1: Linux 2: Windows" [ DialogOption "Linux" (InstallLinux model.playerPosition), DialogOption "Windows" (InstallWindows model.playerPosition) ] }
@@ -143,10 +123,6 @@ movePlayerUp model =
 
 movePlayerRight model =
   ( { model | playerPosition = Player.moveRight model.playerPosition }, Cmd.none )
-
-buildServer : List Infrastructure -> Position -> Maybe OperatingSystem -> List Infrastructure
-buildServer infrastructure position system =
-  Infrastructure Server position system :: infrastructure
 
 view model =
   svg [ width "600", height "500" ]
@@ -200,14 +176,6 @@ renderInfrastructure infrastructure =
         Nothing ->
           renderServer item.position
     ) infrastructure)
-
-toPixelX : Position -> String
-toPixelX position =
-  toString <| (first position - 1) * 50
-
-toPixelY : Position -> String
-toPixelY position =
-  toString <| (second position - 1) * 50
 
 renderServer position =
   image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/server.svg" ] []
