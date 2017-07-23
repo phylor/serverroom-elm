@@ -8,6 +8,7 @@ import Keyboard exposing (..)
 import Char exposing (fromCode)
 import Infrastructure exposing (..)
 import Position exposing (..)
+import Dialog exposing (..)
 
 import Grid exposing (render)
 import Player exposing (moveLeft, moveUp, moveRight, moveDown)
@@ -16,21 +17,11 @@ type Msg = PressesKey Keyboard.KeyCode -- for KeyCodes check https://www.w3.org/
          | InstallLinux Position
          | InstallWindows Position
 
-type alias Dialog =
-  { message : String
-  , options : List DialogOption
-  }
-
-type alias DialogOption =
-  { title : String
-  , action : Msg
-  }
-
 type alias Model =
   { playerPosition : Position
   , infrastructure : List Infrastructure
   , money : Int
-  , dialog : Maybe Dialog
+  , dialog : Maybe (Dialog Msg)
   }
 
 init =
