@@ -131,12 +131,7 @@ styl =
 renderDialog model =
   case model.dialog of
     Just dialog ->
-      g []
-        [ rect [ x "50", y "100", width "400", height "300", styl "fill: rgb(21, 3, 183)" ] []
-        , text_ [ x "75", y "125", styl "fill: rgb(144, 144, 181); font-family: sans-serif" ] [ text dialog.message ]
-        ]
--- 144 144 181
-
+      renderDialogAt dialog
     Nothing ->
       g [] []
 
