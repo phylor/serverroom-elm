@@ -8,11 +8,8 @@ import Keyboard exposing (..)
 import Char exposing (fromCode)
 
 import Messages exposing (..)
-import Infrastructure exposing (..)
-import Position exposing (..)
 import Dialog exposing (..)
 import Game exposing (..)
-import Grid exposing (render)
 import Player exposing (moveLeft, moveUp, moveRight, moveDown)
 
 type alias Model =
