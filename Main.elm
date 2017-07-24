@@ -11,20 +11,50 @@ import Messages exposing (..)
 import Dialog exposing (..)
 import Game exposing (..)
 import Player exposing (moveLeft, moveUp, moveRight, moveDown)
+import Tui exposing (..)
+
+type State = MenuState
+           | PlayingState
 
 type alias Model =
-  { game : GameModel Msg
+  { state : State
+  , activeUi : Maybe (Menu Msg)
+  , game : GameModel Msg
   }
 
 init =
-  ( Model <| GameModel (1, 1) [] 100000 Nothing, Cmd.none )
+  ( Model MenuState (Just (Menu [ MenuOption "New Game" NewGame ] ( MenuOption "New Game" NewGame ))) <| GameModel (1, 1) [] 100000 Nothing, Cmd.none )
 
+update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
-  ( Model <| Game.update msg model.game, Cmd.none )
+  case msg of
+    NewGame ->
+      ( { model | state = PlayingState }, Cmd.none )
+
+    PressesKey 13 ->
+      case model.activeUi of
+        Just ui ->
+          update ui.selectedOption.action { model | activeUi = Nothing }
+        Nothing ->
+          ( model, Cmd.none )
+
+    _ ->
+      case model.state of
+        MenuState ->
+          ( model, Cmd.none )
+        PlayingState ->
+          ( { model | game = Game.update msg model.game }, Cmd.none )
 
 view model =
   svg [ width "600", height "500" ]
-    <| renderGame model.game
+    (case model.state of
+      MenuState ->
+        [ createWindow "Server Room" 0 0 600 500
+        , createMenu [ MenuOption "New Game" NewGame ]
+        ]
+      PlayingState ->
+        renderGame model.game
+    )
 
 subscriptions model =
   Keyboard.ups (\code -> PressesKey code)

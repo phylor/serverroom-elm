@@ -176,3 +176,6 @@ update msg model =
 
     PressesKey _ ->
       model
+
+    _ ->
+      model
