@@ -9,6 +9,7 @@ import Position exposing (..)
 import Infrastructure exposing (..)
 import Dialog exposing (..)
 import Player
+import Grid
 
 type alias GameModel messageType =
   { playerPosition : Position
@@ -84,13 +85,94 @@ installDialog model =
   { model | dialog = Just <| Dialog "Which operating system do you want to install? 1: Linux 2: Windows" [ DialogOption "Linux" (InstallLinux model.playerPosition), DialogOption "Windows" (InstallWindows model.playerPosition) ] }
 
 movePlayerLeft model =
-  ( { model | playerPosition = Player.moveLeft model.playerPosition }, Cmd.none )
+  { model | playerPosition = Player.moveLeft model.playerPosition }
 
 movePlayerDown model =
-  ( { model | playerPosition = Player.moveDown model.playerPosition }, Cmd.none )
+  { model | playerPosition = Player.moveDown model.playerPosition }
 
 movePlayerUp model =
-  ( { model | playerPosition = Player.moveUp model.playerPosition }, Cmd.none )
+  { model | playerPosition = Player.moveUp model.playerPosition }
 
 movePlayerRight model =
-  ( { model | playerPosition = Player.moveRight model.playerPosition }, Cmd.none )
+  { model | playerPosition = Player.moveRight model.playerPosition }
+
+renderGame model =
+  [ renderBackground
+  , Grid.render
+  , renderInfrastructure model.infrastructure
+  , renderPlayer model.playerPosition
+  , renderDialog model
+  , renderStats model
+  ]
+
+update msg model =
+  case msg of
+    PressesKey 37 ->
+      movePlayerLeft model
+
+    PressesKey 72 ->
+      movePlayerLeft model
+
+    PressesKey 38 ->
+      movePlayerUp model
+
+    PressesKey 75 ->
+      movePlayerUp model
+
+    PressesKey 39 ->
+      movePlayerRight model
+
+    PressesKey 76 ->
+      movePlayerRight model
+
+    PressesKey 40 ->
+      movePlayerDown model
+
+    PressesKey 74 ->
+      movePlayerDown model
+
+    PressesKey 66 ->
+      if model.money >= 20000 then
+        { model | infrastructure = buildServer model.infrastructure model.playerPosition Nothing, money = model.money - 20000 }
+      else
+        model
+
+    PressesKey 73 ->
+      installDialog model
+
+    PressesKey 49 -> -- 1
+      case model.dialog of
+        Just dialog ->
+          let
+            option = List.head dialog.options
+          in
+            case option of
+              Just opt ->
+                update opt.action model
+              Nothing ->
+                model
+        Nothing ->
+          model
+
+    PressesKey 50 -> -- 2
+      case model.dialog of
+        Just dialog ->
+          let
+            option = List.head <| List.drop 1 dialog.options
+          in
+            case option of
+              Just opt ->
+                update opt.action model
+              Nothing ->
+                model
+        Nothing ->
+          model
+
+    InstallLinux position ->
+      { model | infrastructure = installLinux model.infrastructure position, dialog = Nothing }
+
+    InstallWindows position ->
+      { model | infrastructure = installWindows model.infrastructure position, dialog = Nothing }
+
+    PressesKey _ ->
+      model
