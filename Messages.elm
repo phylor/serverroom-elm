@@ -16,3 +16,5 @@ type Msg = PressesKey Keyboard.KeyCode -- for KeyCodes check https://www.w3.org/
          | GraphicsMenu
          | UserFormInput String
          | SaveWidth String
+         | ChangeHeight
+         | SaveHeight String

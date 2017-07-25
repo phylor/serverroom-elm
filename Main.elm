@@ -18,6 +18,7 @@ type State = MenuState
 
 type alias Settings =
   { width : Int
+  , height : Int
   }
 
 type alias Model =
@@ -35,10 +36,10 @@ settingsMenu =
   Menu [] (MenuOption "Graphics" GraphicsMenu) [ MenuOption "back" MainMenu ]
 
 graphicsMenu settings =
-  Menu [] (MenuOption ("Width: " ++ (toString <| settings.width)) ChangeWidth) [ MenuOption "back" SettingsMenu ]
+  Menu [] (MenuOption ("Width: " ++ (toString <| settings.width)) ChangeWidth) [ MenuOption ("Height: " ++ (toString <| settings.height)) ChangeHeight, MenuOption "back" SettingsMenu ]
 
 defaultSettings =
-  Settings 600
+  Settings 640 480
 
 init =
   ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 100000 Nothing) defaultSettings Nothing, Cmd.none )
@@ -61,12 +62,25 @@ update msg model =
     ChangeWidth ->
       ( { model | activeUi = Nothing, activeForm = Just <| Form "" (\input -> SaveWidth input) }, Cmd.none )
 
+    ChangeHeight ->
+      ( { model | activeUi = Nothing, activeForm = Just <| Form "" (\input -> SaveHeight input) }, Cmd.none )
+
     SaveWidth width ->
       let
         newSettings = (case String.toInt width of
-                    Err message -> Settings 0
-                    Ok newWidth -> Settings newWidth
+                    Err message -> Settings model.settings.width model.settings.height
+                    Ok newWidth -> Settings newWidth model.settings.height
                    )
+      in
+        ( { model | settings = newSettings, activeUi = Just <| graphicsMenu <| newSettings }, Cmd.none )
+
+    SaveHeight height ->
+      let
+        settings = model.settings
+        newSettings = (case String.toInt height of
+                        Err message -> { settings | height = model.settings.height }
+                        Ok newHeight -> { settings | height = newHeight }
+                      )
       in
         ( { model | settings = newSettings, activeUi = Just <| graphicsMenu <| newSettings }, Cmd.none )
 
@@ -130,10 +144,10 @@ update msg model =
           ( { model | game = Game.update msg model.game }, Cmd.none )
 
 view model =
-  svg [ width "600", height "500" ]
+  svg [ width <| toString <| model.settings.width, height "500" ]
     (case model.state of
       MenuState ->
-        [ renderWindow "Server Room" 0 0 600 500
+        [ renderWindow "Server Room" 0 0 model.settings.width 500
         , (case model.activeUi of
             Just menu ->
               renderMenu menu 200 200
