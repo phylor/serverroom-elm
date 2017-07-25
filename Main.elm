@@ -31,12 +31,50 @@ update msg model =
     NewGame ->
       ( { model | state = PlayingState }, Cmd.none )
 
-    PressesKey 13 ->
+    MenuMoveUp ->
+      case model.activeUi of
+        Just menu ->
+          ( { model | activeUi = Just <| menuMoveUp menu }, Cmd.none )
+        Nothing ->
+          ( model, Cmd.none )
+
+    MenuMoveDown ->
+      case model.activeUi of
+        Just menu ->
+          ( { model | activeUi = Just <| menuMoveDown menu }, Cmd.none )
+        Nothing ->
+          ( model, Cmd.none )
+
+    PressesKey 13 -> -- Enter
       case model.activeUi of
         Just ui ->
           update ui.selectedOption.action { model | activeUi = Nothing }
         Nothing ->
           ( model, Cmd.none )
+
+    PressesKey 38 -> -- Arrow Up
+      case model.state of
+        MenuState ->
+          case model.activeUi of
+            Just ui ->
+              update MenuMoveUp model
+            Nothing ->
+              ( model, Cmd.none )
+
+        PlayingState ->
+          ( { model | game = Game.update msg model.game }, Cmd.none )
+
+    PressesKey 40 -> -- Arrow Down
+      case model.state of
+        MenuState ->
+          case model.activeUi of
+            Just ui ->
+              update MenuMoveDown model
+            Nothing ->
+              ( model, Cmd.none )
+
+        PlayingState ->
+          ( { model | game = Game.update msg model.game }, Cmd.none )
 
     _ ->
       case model.state of

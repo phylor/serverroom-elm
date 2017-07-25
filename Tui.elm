@@ -1,7 +1,8 @@
-module Tui exposing (Menu, MenuOption, renderWindow, renderMenu)
+module Tui exposing (Menu, MenuOption, renderWindow, renderMenu, menuMoveUp, menuMoveDown)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Tuple exposing (first, second)
 
 import Position exposing (Position)
 
@@ -40,3 +41,33 @@ menuOptionStyle option selectedOption =
     Svg.Attributes.style "fill: rgb(224, 224, 246); font-family:sans-serif"
   else
     Svg.Attributes.style "fill: rgb(153, 151, 181); font-family:sans-serif"
+
+menuMoveUp : Menu messageType -> Menu messageType
+menuMoveUp menu =
+  let
+    indexedOptions = List.indexedMap (,) menu.options
+    selectedOptionIndex = (case (List.head <| List.filter (\tuple -> second tuple == menu.selectedOption) indexedOptions) of
+                                      Just tuple -> first tuple
+                                      Nothing -> List.length menu.options)
+    newOptionIndex = if 0 > selectedOptionIndex - 1 then selectedOptionIndex else selectedOptionIndex - 1
+    newSelectedOption = (case (List.head <| List.filter (\tuple -> first tuple == newOptionIndex) indexedOptions) of
+                          Just tuple -> second tuple
+                          Nothing -> menu.selectedOption
+                        )
+  in
+    { menu | selectedOption = newSelectedOption }
+
+menuMoveDown : Menu messageType -> Menu messageType
+menuMoveDown menu =
+  let
+    indexedOptions = List.indexedMap (,) menu.options
+    selectedOptionIndex = (case (List.head <| List.filter (\tuple -> second tuple == menu.selectedOption) indexedOptions) of
+                                      Just tuple -> first tuple
+                                      Nothing -> -1)
+    newOptionIndex = if List.length menu.options - 1 > selectedOptionIndex + 1 then selectedOptionIndex else selectedOptionIndex + 1
+    newSelectedOption = (case (List.head <| List.filter (\tuple -> first tuple == newOptionIndex) indexedOptions) of
+                          Just tuple -> second tuple
+                          Nothing -> menu.selectedOption
+                        )
+  in
+    { menu | selectedOption = newSelectedOption }
