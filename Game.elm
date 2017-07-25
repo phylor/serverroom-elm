@@ -67,26 +67,34 @@ renderStats model =
 
 renderInfrastructure infrastructure =
   g []
-    (List.map (\item ->
-      case item.system of
-        Just Linux ->
-          g []
-            [ renderServer item.position
-            , renderLinux item.position
-            ]
-        Just Windows ->
-          g []
-            [ renderServer item.position
-            , renderWindows item.position
-            ]
-        Just Xen ->
-          g []
-            [ renderServer item.position
-            , renderXen item.position
-            ]
-        Nothing ->
-          renderServer item.position
-    ) infrastructure)
+    (List.concat [renderServers infrastructure, renderSupports infrastructure])
+
+renderSupports infrastructure =
+  (List.filter (\item -> item.object == Support) infrastructure |> List.map (\item ->
+    image [ x <| toPixelX item.position, y <| toPixelY item.position, width "50", height "50", xlinkHref "resources/support.svg" ] []
+  ))
+
+renderServers infrastructure =
+  (List.filter (\item -> item.object == Server) infrastructure |> List.map (\item ->
+    case item.system of
+      Just Linux ->
+        g []
+          [ renderServer item.position
+          , renderLinux item.position
+          ]
+      Just Windows ->
+        g []
+          [ renderServer item.position
+          , renderWindows item.position
+          ]
+      Just Xen ->
+        g []
+          [ renderServer item.position
+          , renderXen item.position
+          ]
+      Nothing ->
+        renderServer item.position
+  ))
 
 renderServer position =
   image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/server.svg" ] []
@@ -201,6 +209,9 @@ update msg model =
         Nothing ->
           model
 
+    PressesKey 87 -> -- w
+      { model | infrastructure = buildSupport model.infrastructure model.playerPosition }
+
     InstallLinux position ->
       { model | infrastructure = install Linux model.infrastructure position, dialog = Nothing }
 
@@ -306,3 +317,6 @@ turnoverWindows =
 
 turnoverXen =
   800
+
+buildSupport infrastructure position =
+  (Infrastructure Support position Nothing) :: infrastructure
