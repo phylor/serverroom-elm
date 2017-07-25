@@ -5,6 +5,7 @@ import Svg.Attributes exposing (..)
 import Tuple exposing (first, second)
 import Html exposing (input)
 import Html.Events exposing (onInput)
+import Html.Attributes
 
 import Position exposing (Position)
 
@@ -84,7 +85,7 @@ renderForm : (Form messageType) -> (String -> messageType) -> Svg messageType
 renderForm form action =
   g []
     [ foreignObject [ x "200", y "200", width "200", height "200" ]
-                    [ input [ onInput action ] []
+                    [ input [ onInput action, inputStyle, Html.Attributes.autofocus True ] []
                     ]
     ]
 
@@ -95,3 +96,12 @@ updateForm form input =
       Just { f | currentValue = input }
     Nothing ->
       Nothing
+
+inputStyle =
+  Html.Attributes.style
+    [ ("background-color", "rgb(21, 3, 183)")
+    , ("border", "1px solid rgb(0, 178, 181)")
+    , ("color", "rgb(0, 178, 181)")
+    , ("outline-width", "0")
+    , ("padding", "0.25rem")
+    ]
