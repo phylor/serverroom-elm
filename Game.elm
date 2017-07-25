@@ -12,12 +12,17 @@ import Dialog exposing (..)
 import Player
 import Grid
 
+type alias Client =
+  {
+  }
+
 type alias GameModel messageType =
   { playerPosition : Position
   , infrastructure : List Infrastructure
   , money : Int
   , dialog : Maybe (Dialog messageType)
   , date : Date
+  , clients : List Client
   }
 
 dateToString date =
@@ -30,17 +35,24 @@ dateToString date =
 renderStats model =
   g []
     [ rect [ x "500", y "0", width "100", height "20", Svg.Attributes.style "fill: rgb(0, 178, 181)" ] []
-    , text_ [ x "505", y "15", Svg.Attributes.style "font-family: sans-serif; font-size: 0.8rem" ] [ text <| dateToString model.date ]
+    , text_ [ x "505", y "15", Svg.Attributes.style "font-family: sans-serif; font-size: 0.75rem" ] [ text <| dateToString model.date ]
     , rect [ x "500", y "20", width "100", height "480", Svg.Attributes.style "fill: rgb(21, 3, 183)" ] []
     , line [ x1 "500", y1 "0", x2 "500", y2 "500", Svg.Attributes.style "stroke: rgb(224, 224, 246)" ] []
+
     , rect [ x "503", y "25", width "94", height "20", Svg.Attributes.style "stroke: rgb(224, 224, 246); fill: rgb(21, 3, 183)" ] []
     , line [ x1 "520", y1 "25", x2 "520", y2 "45", Svg.Attributes.style "stroke: rgb(224, 224, 246)" ] []
     , text_ [ x "505", y "40", Svg.Attributes.style "fill: rgb(224, 224, 246)" ] [ text "$" ]
     , text_ [ x "525", y "40", Svg.Attributes.style "fill: rgb(224, 224, 246)" ] [ text <| toString model.money]
+
     , rect [ x "503", y "45", width "94", height "20", Svg.Attributes.style "stroke: rgb(224, 224, 246); fill: rgb(21, 3, 183)" ] []
     , line [ x1 "520", y1 "45", x2 "520", y2 "65", Svg.Attributes.style "stroke: rgb(224, 224, 246)" ] []
     , text_ [ x "505", y "60", Svg.Attributes.style "fill: rgb(224, 224, 246)" ] [ text "S" ]
     , text_ [ x "525", y "60", Svg.Attributes.style "fill: rgb(224, 224, 246)" ] [ text <| toString <| List.length model.infrastructure ]
+
+    , rect [ x "503", y "65", width "94", height "20", Svg.Attributes.style "stroke: rgb(224, 224, 246); fill: rgb(21, 3, 183)" ] []
+    , line [ x1 "520", y1 "65", x2 "520", y2 "85", Svg.Attributes.style "stroke: rgb(224, 224, 246)" ] []
+    , text_ [ x "505", y "80", Svg.Attributes.style "fill: rgb(224, 224, 246)" ] [ text "C" ]
+    , text_ [ x "525", y "80", Svg.Attributes.style "fill: rgb(224, 224, 246)" ] [ text <| toString <| List.length model.clients ]
     ]
 
 renderInfrastructure infrastructure =
@@ -57,6 +69,11 @@ renderInfrastructure infrastructure =
             [ renderServer item.position
             , renderWindows item.position
             ]
+        Just Xen ->
+          g []
+            [ renderServer item.position
+            , renderXen item.position
+            ]
         Nothing ->
           renderServer item.position
     ) infrastructure)
@@ -69,6 +86,9 @@ renderLinux position =
 
 renderWindows position =
   image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/windows.svg" ] []
+
+renderXen position =
+  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/xen.svg" ] []
 
 renderDialog model =
   case model.dialog of
@@ -185,7 +205,11 @@ update msg model =
       { model | infrastructure = installWindows model.infrastructure position, dialog = Nothing }
 
     ProceedToNextDay ->
-      { model | date = nextDay model.date }
+      let
+        newClients = processClients model
+        newMoney = processMoney model
+      in
+        { model | date = nextDay model.date, clients = newClients, money = newMoney }
 
     PressesKey _ ->
       model
@@ -199,3 +223,80 @@ dayInMilliseconds =
 nextDay : Date -> Date
 nextDay date =
   Date.fromTime <| Date.toTime date + dayInMilliseconds
+
+processClients model =
+  if 20 * List.length model.infrastructure > List.length model.clients then
+    Client :: model.clients
+  else
+    model.clients
+
+serverPrice =
+  1
+
+-- usually 1 rack = 42U
+-- 1 rack of servers (hardware): $100'000
+-- linux: $350 for installation -> $15'000 per rack
+-- windows: $1500 per year -> $4 per day -> $175 per day per rack
+-- xen: free, but only web hosting
+
+-- 1 rack hardware: $100'000
+-- 1 rack hardware: $500 per day
+-- 1 rack linux: $15'000
+-- 1 rack windows: $5'000 per day
+-- 1 rack xen: $0
+
+-- 1 rack linux: $1'200 per day
+-- 1 rack windows: $20'000 per day
+-- 1 rack xen: $800 per day
+processMoney model =
+  model.money - costs model + turnover model
+
+costs model =
+  List.sum <| List.map (\infrastructure -> costForRack + costForInstallation infrastructure) model.infrastructure
+
+turnover model =
+  List.sum <| List.map (\infrastructure -> turnoverFor infrastructure) model.infrastructure
+
+costForInstallation infrastructure =
+  case infrastructure.system of
+    Just system ->
+      case system of
+        Linux ->
+          0
+        Windows ->
+          5000
+        Xen ->
+          0
+    Nothing ->
+      0
+
+turnoverFor infrastructure =
+  case infrastructure.system of
+    Just system ->
+      case system of
+        Linux ->
+          1200
+        Windows ->
+          20000
+        Xen ->
+          800
+    Nothing ->
+      0
+
+costForRack =
+  500
+
+costToBuildRack =
+  100000
+
+costToBuildLinux =
+  15000
+
+turnoverLinux =
+  1200
+
+turnoverWindows =
+  20000
+
+turnoverXen =
+  800

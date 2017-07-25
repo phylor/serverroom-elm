@@ -52,7 +52,7 @@ startingDate =
       Date.fromTime 0
 
 init =
-  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 100000 Nothing startingDate) defaultSettings Nothing, Cmd.none )
+  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 100000 Nothing startingDate []) defaultSettings Nothing, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
@@ -181,7 +181,7 @@ view model =
 subscriptions model =
   Sub.batch
     [ Keyboard.ups (\code -> PressesKey code)
-    , Time.every (3 * Time.second) Tick
+    , Time.every (2 * Time.second) Tick
     ]
 
 main = Html.program

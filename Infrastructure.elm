@@ -10,6 +10,7 @@ type alias Infrastructure =
 
 type OperatingSystem = Linux
                      | Windows
+                     | Xen
 
 type InfrastructureType = Server
 
