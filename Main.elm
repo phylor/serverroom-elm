@@ -120,7 +120,11 @@ update msg model =
             Just form ->
               update (form.action form.currentValue) { model | activeForm = Nothing }
             Nothing ->
-              ( model, Cmd.none )
+              case model.state of
+                MenuState ->
+                  ( model, Cmd.none )
+                PlayingState ->
+                  ( { model | game = Game.update msg model.game }, Cmd.none )
 
     PressesKey 38 -> -- Arrow Up
       case model.state of

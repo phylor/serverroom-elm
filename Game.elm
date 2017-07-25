@@ -11,6 +11,7 @@ import Infrastructure exposing (..)
 import Dialog exposing (..)
 import Player
 import Grid
+import Tui exposing (..)
 
 type alias Client =
   {
@@ -121,7 +122,7 @@ renderPlayer playerPosition =
 
 installDialog : GameModel Msg -> GameModel Msg
 installDialog model =
-  { model | dialog = Just <| Dialog "Which operating system do you want to install? 1: Linux 2: Windows" [ DialogOption "Linux" (InstallLinux model.playerPosition), DialogOption "Windows" (InstallWindows model.playerPosition) ] }
+  { model | dialog = Just <| Dialog "Which operating system do you want to install?" (Menu [] (MenuOption "Linux" (InstallLinux model.playerPosition)) [ MenuOption "Windows" (InstallWindows model.playerPosition), MenuOption "Xen" (InstallXen model.playerPosition) ] ) }
 
 movePlayerLeft model =
   { model | playerPosition = Player.moveLeft model.playerPosition }
@@ -153,7 +154,14 @@ update msg model =
       movePlayerLeft model
 
     PressesKey 38 ->
-      movePlayerUp model
+      case model.dialog of
+        Just dialog ->
+          let
+            newDialog = { dialog | menu = menuMoveUp dialog.menu }
+          in
+            { model | dialog = Just newDialog }
+        Nothing ->
+          movePlayerUp model
 
     PressesKey 75 ->
       movePlayerUp model
@@ -165,7 +173,14 @@ update msg model =
       movePlayerRight model
 
     PressesKey 40 ->
-      movePlayerDown model
+      case model.dialog of
+        Just dialog ->
+          let
+            newDialog = { dialog | menu = menuMoveDown dialog.menu }
+          in
+            { model | dialog = Just newDialog }
+        Nothing ->
+          movePlayerDown model
 
     PressesKey 74 ->
       movePlayerDown model
@@ -179,39 +194,21 @@ update msg model =
     PressesKey 73 ->
       installDialog model
 
-    PressesKey 49 -> -- 1
+    PressesKey 13 -> -- Enter
       case model.dialog of
         Just dialog ->
-          let
-            option = List.head dialog.options
-          in
-            case option of
-              Just opt ->
-                update opt.action model
-              Nothing ->
-                model
-        Nothing ->
-          model
-
-    PressesKey 50 -> -- 2
-      case model.dialog of
-        Just dialog ->
-          let
-            option = List.head <| List.drop 1 dialog.options
-          in
-            case option of
-              Just opt ->
-                update opt.action model
-              Nothing ->
-                model
+          update dialog.menu.selectedOption.action model
         Nothing ->
           model
 
     InstallLinux position ->
-      { model | infrastructure = installLinux model.infrastructure position, dialog = Nothing }
+      { model | infrastructure = install Linux model.infrastructure position, dialog = Nothing }
 
     InstallWindows position ->
-      { model | infrastructure = installWindows model.infrastructure position, dialog = Nothing }
+      { model | infrastructure = install Windows model.infrastructure position, dialog = Nothing }
+
+    InstallXen position ->
+      { model | infrastructure = install Xen model.infrastructure position, dialog = Nothing }
 
     ProceedToNextDay ->
       let
