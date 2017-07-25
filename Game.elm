@@ -27,15 +27,24 @@ type alias GameModel messageType =
 
 dateToString date =
   List.foldr String.append "" <| List.intersperse " " [ toString <| Date.dayOfWeek date
-                                                      , toString <| Date.day date
+                                                      , dateDay date
                                                       , toString <| Date.month date
                                                       , toString <| Date.year date
                                                       ]
 
+dateDay date =
+  let
+    dayString = toString <| Date.day date
+  in
+    if String.length dayString <= 1 then
+      "0" ++ dayString
+    else
+      dayString
+
 renderStats model =
   g []
     [ rect [ x "500", y "0", width "100", height "20", Svg.Attributes.style "fill: rgb(0, 178, 181)" ] []
-    , text_ [ x "505", y "15", Svg.Attributes.style "font-family: sans-serif; font-size: 0.75rem" ] [ text <| dateToString model.date ]
+    , text_ [ x "505", y "15", Svg.Attributes.style "font-family: monospace; font-size: 0.75rem" ] [ text <| dateToString model.date ]
     , rect [ x "500", y "20", width "100", height "480", Svg.Attributes.style "fill: rgb(21, 3, 183)" ] []
     , line [ x1 "500", y1 "0", x2 "500", y2 "500", Svg.Attributes.style "stroke: rgb(224, 224, 246)" ] []
 
