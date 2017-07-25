@@ -10,3 +10,5 @@ type Msg = PressesKey Keyboard.KeyCode -- for KeyCodes check https://www.w3.org/
          | NewGame
          | MenuMoveUp
          | MenuMoveDown
+         | MainMenu
+         | SettingsMenu

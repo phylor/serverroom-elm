@@ -22,14 +22,26 @@ type alias Model =
   , game : GameModel Msg
   }
 
+mainMenu =
+  Menu [ MenuOption "New Game" NewGame, MenuOption "Settings" SettingsMenu ] ( MenuOption "New Game" NewGame )
+
+settingsMenu =
+  Menu [ MenuOption "Graphics" MainMenu, MenuOption "back" MainMenu ] ( MenuOption "Graphics" MainMenu )
+
 init =
-  ( Model MenuState (Just (Menu [ MenuOption "New Game" NewGame, MenuOption "Settings" NewGame ] ( MenuOption "New Game" NewGame ))) <| GameModel (1, 1) [] 100000 Nothing, Cmd.none )
+  ( Model MenuState (Just mainMenu) <| GameModel (1, 1) [] 100000 Nothing, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
   case msg of
     NewGame ->
       ( { model | state = PlayingState }, Cmd.none )
+
+    MainMenu ->
+      ( { model | activeUi = Just mainMenu }, Cmd.none )
+
+    SettingsMenu ->
+      ( { model | activeUi = Just settingsMenu }, Cmd.none )
 
     MenuMoveUp ->
       case model.activeUi of
