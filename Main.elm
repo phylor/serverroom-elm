@@ -29,13 +29,13 @@ type alias Model =
   }
 
 mainMenu =
-  Menu [ MenuOption "New Game" NewGame, MenuOption "Settings" SettingsMenu ] ( MenuOption "New Game" NewGame )
+  Menu [] (MenuOption "New Game" NewGame) [ MenuOption "Settings" SettingsMenu ]
 
 settingsMenu =
-  Menu [ MenuOption "Graphics" GraphicsMenu, MenuOption "back" MainMenu ] ( MenuOption "Graphics" MainMenu )
+  Menu [] (MenuOption "Graphics" GraphicsMenu) [ MenuOption "back" MainMenu ]
 
 graphicsMenu settings =
-  Menu [ MenuOption ("Width: " ++ (toString <| settings.width)) ChangeWidth, MenuOption "back" SettingsMenu ] ( MenuOption "Width: " ChangeWidth )
+  Menu [] (MenuOption ("Width: " ++ (toString <| settings.width)) ChangeWidth) [ MenuOption "back" SettingsMenu ]
 
 defaultSettings =
   Settings 600

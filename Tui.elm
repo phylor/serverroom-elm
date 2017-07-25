@@ -9,8 +9,9 @@ import Html.Events exposing (onInput)
 import Position exposing (Position)
 
 type alias Menu messageType =
-  { options : List (MenuOption messageType)
+  { beforeSelectedOption : List (MenuOption messageType)
   , selectedOption : MenuOption messageType
+  , afterSelectedOption : List (MenuOption messageType)
   }
 
 type alias MenuOption messageType =
@@ -34,7 +35,7 @@ renderWindow title xpos ypos w h =
 renderMenu : Menu messageType -> Int -> Int -> Svg message
 renderMenu menu xpos ypos =
   g []
-    (List.map (\( option, ( xp, yp ) ) -> (if option == menu.selectedOption then renderSelectedMenuOption option xp yp else renderMenuOption option xp yp)) (menuOptionsWithPosition menu.options xpos ypos))
+    (List.map (\( option, ( xp, yp ) ) -> (if option == menu.selectedOption then renderSelectedMenuOption option xp yp else renderMenuOption option xp yp)) (menuOptionsWithPosition (menuOptions menu) xpos ypos))
 
 menuOptionsWithPosition : List (MenuOption messageType) -> Int -> Int -> List ( MenuOption messageType, Position )
 menuOptionsWithPosition options xpos ypos =
@@ -54,33 +55,30 @@ renderSelectedMenuOption option xpos ypos =
 
 menuMoveUp : Menu messageType -> Menu messageType
 menuMoveUp menu =
-  let
-    indexedOptions = List.indexedMap (,) menu.options
-    selectedOptionIndex = (case (List.head <| List.filter (\tuple -> second tuple == menu.selectedOption) indexedOptions) of
-                                      Just tuple -> first tuple
-                                      Nothing -> List.length menu.options)
-    newOptionIndex = if 0 > selectedOptionIndex - 1 then selectedOptionIndex else selectedOptionIndex - 1
-    newSelectedOption = (case (List.head <| List.filter (\tuple -> first tuple == newOptionIndex) indexedOptions) of
-                          Just tuple -> second tuple
-                          Nothing -> menu.selectedOption
-                        )
-  in
-    { menu | selectedOption = newSelectedOption }
+  case List.reverse menu.beforeSelectedOption |> List.head of
+    Just newSelectedOption ->
+      let
+        newAfterSelectedOption = menu.selectedOption :: menu.afterSelectedOption
+        newBeforeSelectedOption = List.reverse menu.beforeSelectedOption |> List.drop 1 |> List.reverse
+      in
+        Menu newBeforeSelectedOption newSelectedOption newAfterSelectedOption
+    Nothing ->
+      menu
 
 menuMoveDown : Menu messageType -> Menu messageType
 menuMoveDown menu =
-  let
-    indexedOptions = List.indexedMap (,) menu.options
-    selectedOptionIndex = (case (List.head <| List.filter (\tuple -> second tuple == menu.selectedOption) indexedOptions) of
-                                      Just tuple -> first tuple
-                                      Nothing -> -1)
-    newOptionIndex = if List.length menu.options - 1 > selectedOptionIndex + 1 then selectedOptionIndex else selectedOptionIndex + 1
-    newSelectedOption = (case (List.head <| List.filter (\tuple -> first tuple == newOptionIndex) indexedOptions) of
-                          Just tuple -> second tuple
-                          Nothing -> menu.selectedOption
-                        )
-  in
-    { menu | selectedOption = newSelectedOption }
+  case List.head menu.afterSelectedOption of
+    Just newSelectedOption ->
+      let
+        newAfterSelectedOption = List.drop 1 menu.afterSelectedOption
+        newBeforeSelectedOption = List.append menu.beforeSelectedOption [menu.selectedOption]
+      in
+        Menu newBeforeSelectedOption newSelectedOption newAfterSelectedOption
+    Nothing ->
+      menu
+
+menuOptions menu =
+  List.concat [menu.beforeSelectedOption, [menu.selectedOption], menu.afterSelectedOption]
 
 renderForm : (Form messageType) -> (String -> messageType) -> Svg messageType
 renderForm form action =
