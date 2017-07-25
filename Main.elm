@@ -16,20 +16,32 @@ import Tui exposing (..)
 type State = MenuState
            | PlayingState
 
+type alias Settings =
+  { width : Int
+  }
+
 type alias Model =
   { state : State
   , activeUi : Maybe (Menu Msg)
   , game : GameModel Msg
+  , settings : Settings
+  , activeForm : Maybe (Form Msg)
   }
 
 mainMenu =
   Menu [ MenuOption "New Game" NewGame, MenuOption "Settings" SettingsMenu ] ( MenuOption "New Game" NewGame )
 
 settingsMenu =
-  Menu [ MenuOption "Graphics" MainMenu, MenuOption "back" MainMenu ] ( MenuOption "Graphics" MainMenu )
+  Menu [ MenuOption "Graphics" GraphicsMenu, MenuOption "back" MainMenu ] ( MenuOption "Graphics" MainMenu )
+
+graphicsMenu settings =
+  Menu [ MenuOption ("Width: " ++ (toString <| settings.width)) ChangeWidth, MenuOption "back" SettingsMenu ] ( MenuOption "Width: " ChangeWidth )
+
+defaultSettings =
+  Settings 600
 
 init =
-  ( Model MenuState (Just mainMenu) <| GameModel (1, 1) [] 100000 Nothing, Cmd.none )
+  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 100000 Nothing) defaultSettings Nothing, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
@@ -42,6 +54,24 @@ update msg model =
 
     SettingsMenu ->
       ( { model | activeUi = Just settingsMenu }, Cmd.none )
+
+    GraphicsMenu ->
+      ( { model | activeUi = Just <| graphicsMenu model.settings }, Cmd.none )
+
+    ChangeWidth ->
+      ( { model | activeUi = Nothing, activeForm = Just <| Form "" (\input -> SaveWidth input) }, Cmd.none )
+
+    SaveWidth width ->
+      let
+        newSettings = (case String.toInt width of
+                    Err message -> Settings 0
+                    Ok newWidth -> Settings newWidth
+                   )
+      in
+        ( { model | settings = newSettings, activeUi = Just <| graphicsMenu <| newSettings }, Cmd.none )
+
+    UserFormInput input ->
+      ( { model | activeForm = updateForm model.activeForm input }, Cmd.none )
 
     MenuMoveUp ->
       case model.activeUi of
@@ -62,7 +92,11 @@ update msg model =
         Just ui ->
           update ui.selectedOption.action { model | activeUi = Nothing }
         Nothing ->
-          ( model, Cmd.none )
+          case model.activeForm of
+            Just form ->
+              update (form.action form.currentValue) { model | activeForm = Nothing }
+            Nothing ->
+              ( model, Cmd.none )
 
     PressesKey 38 -> -- Arrow Up
       case model.state of
@@ -103,6 +137,12 @@ view model =
         , (case model.activeUi of
             Just menu ->
               renderMenu menu 200 200
+            Nothing ->
+              g [] []
+          )
+        , (case model.activeForm of
+            Just form ->
+              renderForm form UserFormInput
             Nothing ->
               g [] []
           )

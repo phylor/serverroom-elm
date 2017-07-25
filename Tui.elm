@@ -1,8 +1,10 @@
-module Tui exposing (Menu, MenuOption, renderWindow, renderMenu, menuMoveUp, menuMoveDown)
+module Tui exposing (Menu, MenuOption, Form, renderWindow, renderMenu, menuMoveUp, menuMoveDown, renderForm, updateForm)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Tuple exposing (first, second)
+import Html exposing (input)
+import Html.Events exposing (onInput)
 
 import Position exposing (Position)
 
@@ -14,6 +16,11 @@ type alias Menu messageType =
 type alias MenuOption messageType =
   { title : String
   , action : messageType
+  }
+
+type alias Form actionType =
+  { currentValue : String
+  , action : String -> actionType
   }
 
 renderWindow : String -> Int -> Int -> Int -> Int -> Svg message
@@ -74,3 +81,19 @@ menuMoveDown menu =
                         )
   in
     { menu | selectedOption = newSelectedOption }
+
+renderForm : (Form messageType) -> (String -> messageType) -> Svg messageType
+renderForm form action =
+  g []
+    [ foreignObject [ x "200", y "200", width "200", height "200" ]
+                    [ input [ onInput action ] []
+                    ]
+    ]
+
+updateForm : Maybe (Form messageType) -> String -> Maybe (Form messageType)
+updateForm form input =
+  case form of
+    Just f ->
+      Just { f | currentValue = input }
+    Nothing ->
+      Nothing
