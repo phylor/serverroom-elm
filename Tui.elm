@@ -27,7 +27,7 @@ renderWindow title xpos ypos w h =
 renderMenu : Menu messageType -> Int -> Int -> Svg message
 renderMenu menu xpos ypos =
   g []
-    (List.map (\( option, ( xp, yp ) ) -> text_ [ x <| toString xp, y <| toString yp, menuOptionStyle option menu.selectedOption ] [ text option.title ]) (menuOptionsWithPosition menu.options xpos ypos))
+    (List.map (\( option, ( xp, yp ) ) -> (if option == menu.selectedOption then renderSelectedMenuOption option xp yp else renderMenuOption option xp yp)) (menuOptionsWithPosition menu.options xpos ypos))
 
 menuOptionsWithPosition : List (MenuOption messageType) -> Int -> Int -> List ( MenuOption messageType, Position )
 menuOptionsWithPosition options xpos ypos =
@@ -36,11 +36,14 @@ menuOptionsWithPosition options xpos ypos =
   in
     List.map2 (\option position -> ( option, position )) options positions
 
-menuOptionStyle option selectedOption =
-  if option == selectedOption then
-    Svg.Attributes.style "fill: rgb(224, 224, 246); font-family:sans-serif"
-  else
-    Svg.Attributes.style "fill: rgb(153, 151, 181); font-family:sans-serif"
+renderMenuOption option xpos ypos =
+  text_ [ x <| toString xpos, y <| toString ypos, Svg.Attributes.style "fill: rgb(153, 151, 181); font-family:sans-serif" ] [ text option.title ]
+
+renderSelectedMenuOption option xpos ypos =
+  g []
+    [ rect [ x <| toString (xpos - 3), y <| toString (ypos - 15), width "200", height "20", Svg.Attributes.style "fill: rgb(153, 151, 181)" ] []
+    , text_ [ x <| toString xpos, y <| toString ypos, Svg.Attributes.style "fill: rgb(21, 3, 183); font-family:sans-serif" ] [ text option.title ]
+    ]
 
 menuMoveUp : Menu messageType -> Menu messageType
 menuMoveUp menu =
