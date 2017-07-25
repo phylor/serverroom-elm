@@ -67,7 +67,10 @@ renderStats model =
 
 renderInfrastructure infrastructure =
   g []
-    (List.concat [renderServers infrastructure, renderSupports infrastructure])
+    [ renderDoorway
+    , g []
+      (List.concat [renderServers infrastructure, renderSupports infrastructure])
+    ]
 
 renderSupports infrastructure =
   (List.filter (\item -> item.object == Support) infrastructure |> List.map (\item ->
@@ -320,3 +323,6 @@ turnoverXen =
 
 buildSupport infrastructure position =
   (Infrastructure Support position Nothing) :: infrastructure
+
+renderDoorway =
+  image [ x <| toPixelX (5,1), y <| toPixelY (5,1), width "100", height "50", xlinkHref "resources/doorway.svg" ] []
