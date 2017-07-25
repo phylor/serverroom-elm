@@ -23,7 +23,7 @@ type alias Model =
   }
 
 init =
-  ( Model MenuState (Just (Menu [ MenuOption "New Game" NewGame ] ( MenuOption "New Game" NewGame ))) <| GameModel (1, 1) [] 100000 Nothing, Cmd.none )
+  ( Model MenuState (Just (Menu [ MenuOption "New Game" NewGame, MenuOption "Settings" NewGame ] ( MenuOption "New Game" NewGame ))) <| GameModel (1, 1) [] 100000 Nothing, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
@@ -49,8 +49,13 @@ view model =
   svg [ width "600", height "500" ]
     (case model.state of
       MenuState ->
-        [ createWindow "Server Room" 0 0 600 500
-        , createMenu [ MenuOption "New Game" NewGame ]
+        [ renderWindow "Server Room" 0 0 600 500
+        , (case model.activeUi of
+            Just menu ->
+              renderMenu menu 200 200
+            Nothing ->
+              g [] []
+          )
         ]
       PlayingState ->
         renderGame model.game
