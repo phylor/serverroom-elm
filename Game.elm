@@ -3,6 +3,7 @@ module Game exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Tuple exposing (first, second)
+import Date exposing (Date)
 
 import Messages exposing (..)
 import Position exposing (..)
@@ -16,11 +17,20 @@ type alias GameModel messageType =
   , infrastructure : List Infrastructure
   , money : Int
   , dialog : Maybe (Dialog messageType)
+  , date : Date
   }
+
+dateToString date =
+  List.foldr String.append "" <| List.intersperse " " [ toString <| Date.dayOfWeek date
+                                                      , toString <| Date.day date
+                                                      , toString <| Date.month date
+                                                      , toString <| Date.year date
+                                                      ]
 
 renderStats model =
   g []
     [ rect [ x "500", y "0", width "100", height "20", Svg.Attributes.style "fill: rgb(0, 178, 181)" ] []
+    , text_ [ x "505", y "15", Svg.Attributes.style "font-family: sans-serif; font-size: 0.8rem" ] [ text <| dateToString model.date ]
     , rect [ x "500", y "20", width "100", height "480", Svg.Attributes.style "fill: rgb(21, 3, 183)" ] []
     , line [ x1 "500", y1 "0", x2 "500", y2 "500", Svg.Attributes.style "stroke: rgb(224, 224, 246)" ] []
     , rect [ x "503", y "25", width "94", height "20", Svg.Attributes.style "stroke: rgb(224, 224, 246); fill: rgb(21, 3, 183)" ] []
@@ -174,8 +184,18 @@ update msg model =
     InstallWindows position ->
       { model | infrastructure = installWindows model.infrastructure position, dialog = Nothing }
 
+    ProceedToNextDay ->
+      { model | date = nextDay model.date }
+
     PressesKey _ ->
       model
 
     _ ->
       model
+
+dayInMilliseconds =
+  1000 * 60 * 60 * 24
+
+nextDay : Date -> Date
+nextDay date =
+  Date.fromTime <| Date.toTime date + dayInMilliseconds

@@ -6,6 +6,8 @@ import Svg.Attributes exposing (..)
 import Tuple exposing (first, second)
 import Keyboard exposing (..)
 import Char exposing (fromCode)
+import Date exposing (Date)
+import Time
 
 import Messages exposing (..)
 import Dialog exposing (..)
@@ -41,8 +43,16 @@ graphicsMenu settings =
 defaultSettings =
   Settings 640 480
 
+startingDate : Date
+startingDate =
+  case Date.fromString "2003-01-01" of
+    Ok date ->
+      date
+    Err message ->
+      Date.fromTime 0
+
 init =
-  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 100000 Nothing) defaultSettings Nothing, Cmd.none )
+  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 100000 Nothing startingDate) defaultSettings Nothing, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
@@ -136,6 +146,9 @@ update msg model =
         PlayingState ->
           ( { model | game = Game.update msg model.game }, Cmd.none )
 
+    Tick time ->
+      update ProceedToNextDay model
+
     _ ->
       case model.state of
         MenuState ->
@@ -166,7 +179,10 @@ view model =
     )
 
 subscriptions model =
-  Keyboard.ups (\code -> PressesKey code)
+  Sub.batch
+    [ Keyboard.ups (\code -> PressesKey code)
+    , Time.every (3 * Time.second) Tick
+    ]
 
 main = Html.program
   { init = init
