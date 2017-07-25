@@ -13,7 +13,7 @@ type OperatingSystem = Linux
                      | Xen
 
 type InfrastructureType = Server
-                        | Support
+                        | Workspace
 
 install system infrastructure position =
   List.map (\item -> if item.position == position then { item | system = Just system } else item) infrastructure

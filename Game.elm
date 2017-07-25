@@ -69,11 +69,11 @@ renderInfrastructure infrastructure =
   g []
     [ renderDoorway
     , g []
-      (List.concat [renderServers infrastructure, renderSupports infrastructure])
+      (List.concat [renderServers infrastructure, renderWorkspaces infrastructure])
     ]
 
-renderSupports infrastructure =
-  (List.filter (\item -> item.object == Support) infrastructure |> List.map (\item ->
+renderWorkspaces infrastructure =
+  (List.filter (\item -> item.object == Workspace) infrastructure |> List.map (\item ->
     image [ x <| toPixelX item.position, y <| toPixelY item.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
   ))
 
@@ -213,7 +213,7 @@ update msg model =
           model
 
     PressesKey 87 -> -- w
-      { model | infrastructure = buildSupport model.infrastructure model.playerPosition }
+      { model | infrastructure = buildWorkspace model.infrastructure model.playerPosition, money = model.money - 5000 }
 
     InstallLinux position ->
       { model | infrastructure = install Linux model.infrastructure position, dialog = Nothing }
@@ -321,8 +321,8 @@ turnoverWindows =
 turnoverXen =
   800
 
-buildSupport infrastructure position =
-  (Infrastructure Support position Nothing) :: infrastructure
+buildWorkspace infrastructure position =
+  (Infrastructure Workspace position Nothing) :: infrastructure
 
 renderDoorway =
   image [ x <| toPixelX (5,1), y <| toPixelY (5,1), width "100", height "50", xlinkHref "resources/doorway.svg" ] []
