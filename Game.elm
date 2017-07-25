@@ -71,7 +71,7 @@ renderInfrastructure infrastructure =
 
 renderSupports infrastructure =
   (List.filter (\item -> item.object == Support) infrastructure |> List.map (\item ->
-    image [ x <| toPixelX item.position, y <| toPixelY item.position, width "50", height "50", xlinkHref "resources/support.svg" ] []
+    image [ x <| toPixelX item.position, y <| toPixelY item.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
   ))
 
 renderServers infrastructure =
