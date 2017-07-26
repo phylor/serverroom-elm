@@ -160,3 +160,34 @@ updateInfrastructure infrastructure updatedInfrastructure =
                            else
                              Workplace info
              ) infrastructure
+
+racks infrastructure =
+  List.filter isRack infrastructure
+
+isRack infrastructure =
+  case infrastructure of
+    Rack _ ->
+      True
+    Workplace _ ->
+      False
+
+
+workplaces infrastructure =
+  List.filter isWorkplace infrastructure
+
+isWorkplace infrastructure =
+  case infrastructure of
+    Rack _ ->
+      False
+    Workplace _ ->
+      True
+
+supportStaff infrastructure =
+  List.filter hasSupportStaff <| workplaces infrastructure
+
+hasSupportStaff infrastructure =
+  case infrastructure of
+    Rack _ ->
+      False
+    Workplace info ->
+      info.staff == Just Support

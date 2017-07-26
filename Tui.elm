@@ -30,7 +30,7 @@ renderWindow title xpos ypos w h =
   g []
     [ rect [ x <| toString xpos, y <| toString ypos, width <| toString w, height <| toString h, Svg.Attributes.style "fill: rgb(21, 3, 183)" ] []
     , rect [ x <| toString xpos, y <| toString ypos, width <| toString w, height "20", Svg.Attributes.style "fill: rgb(0, 178, 181)" ] []
-    , text_ [ x <| toString (xpos + 3), y <| toString (ypos + 15), Svg.Attributes.style "font-family:sans-serif" ] [ text title ]
+    , text_ [ x <| toString (xpos + 5), y <| toString (ypos + 13), Svg.Attributes.style "font-family: monospace; font-size: 0.75rem" ] [ text title ]
     ]
 
 renderMenu : Menu messageType -> Int -> Int -> Svg message
