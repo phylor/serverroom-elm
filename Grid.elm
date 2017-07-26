@@ -8,7 +8,7 @@ render =
     (List.concat [renderVerticalLines, renderHorizontalLines])
     
 renderVerticalLines =
-  xPositions |> List.map (\x -> line [ x1 x, y1 "0", x2 x, y2 "500" ] [])
+  xPositions |> List.map (\x -> line [ x1 x, y1 "20", x2 x, y2 "520" ] [])
 
 renderHorizontalLines =
   yPositions |> List.map (\y -> line [ x1 "0", y1 y, x2 "500", y2 y ] [])
@@ -19,4 +19,4 @@ xPositions =
 
 yPositions : List String
 yPositions =
-  List.range 1 9 |> List.map (\element -> toString <| 50 * element)
+  List.range 1 9 |> List.map (\element -> toString <| 20 + 50 * element)

@@ -10,7 +10,7 @@ import Financial exposing (..)
 
 renderStats model =
   g []
-    [ renderWindow (dateToString model.date) 500 0 100 500
+    [ renderWindow (dateToString model.date) 500 0 100 520
 
     , g []
         (renderAttributes

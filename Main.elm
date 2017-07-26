@@ -43,7 +43,7 @@ graphicsMenu settings =
   Menu [] (MenuOption ("Width: " ++ (toString <| settings.width)) ChangeWidth) [ MenuOption ("Height: " ++ (toString <| settings.height)) ChangeHeight, MenuOption "back" SettingsMenu ]
 
 defaultSettings =
-  Settings 640 500
+  Settings 640 520
 
 startingDate : Date
 startingDate =
@@ -196,7 +196,7 @@ view model =
           )
         ]
       PlayingState ->
-        renderGame model.game
+        renderGame model.game model.settings
       GameOverState ->
         [renderGameOver model.settings]
     )

@@ -5,12 +5,18 @@ import Tuple exposing (first, second)
 type alias Position =
   ( Int, Int )
 
-toPixelX : Position -> String
+toPixelX : Position -> Int
 toPixelX position =
-  toString <| (first position - 1) * 50
+  (first position - 1) * 50
 
-toPixelY : Position -> String
+toPixelY : Position -> Int
 toPixelY position =
-  toString <| (second position - 1) * 50
+  (second position - 1) * 50 + 20
 
+toPixelXString : Position -> String
+toPixelXString position =
+  toString <| toPixelX position
 
+toPixelYString : Position -> String
+toPixelYString position =
+  toString <| toPixelY position

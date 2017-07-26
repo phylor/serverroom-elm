@@ -45,7 +45,7 @@ buildWorkplace infrastructure position =
   (Workplace <| WorkplaceInfo position Nothing) :: infrastructure
 
 renderDoorway =
-  image [ x <| toPixelX (5,1), y <| toPixelY (5,1), width "100", height "50", xlinkHref "resources/doorway.svg" ] []
+  image [ x <| toPixelXString (5,1), y <| toPixelYString (5,1), width "100", height "50", xlinkHref "resources/doorway.svg" ] []
 
 repeatingCostForRack =
   500
@@ -89,11 +89,11 @@ renderWorkplace workplaceInfo =
   case workplaceInfo.staff of
     Just staff ->
       g []
-        [ image [ x <| toPixelX workplaceInfo.position, y <| toPixelY workplaceInfo.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
-        , image [ x <| toPixelX workplaceInfo.position, y <| toPixelY workplaceInfo.position, width "50", height "50", xlinkHref "resources/support.svg" ] []
+        [ image [ x <| toPixelXString workplaceInfo.position, y <| toPixelYString workplaceInfo.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
+        , image [ x <| toPixelXString workplaceInfo.position, y <| toPixelYString workplaceInfo.position, width "50", height "50", xlinkHref "resources/support.svg" ] []
         ]
     Nothing ->
-      image [ x <| toPixelX workplaceInfo.position, y <| toPixelY workplaceInfo.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
+      image [ x <| toPixelXString workplaceInfo.position, y <| toPixelYString workplaceInfo.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
 
 renderRack infrastructure =
   case infrastructure.system of
@@ -116,16 +116,16 @@ renderRack infrastructure =
       renderServer infrastructure.position
 
 renderServer position =
-  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/server.svg" ] []
+  image [ x <| toPixelXString position, y <| toPixelYString position, width "50", height "50", xlinkHref "resources/server.svg" ] []
 
 renderLinux position =
-  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/linux.svg" ] []
+  image [ x <| toPixelXString position, y <| toPixelYString position, width "50", height "50", xlinkHref "resources/linux.svg" ] []
 
 renderWindows position =
-  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/windows.svg" ] []
+  image [ x <| toPixelXString position, y <| toPixelYString position, width "50", height "50", xlinkHref "resources/windows.svg" ] []
 
 renderXen position =
-  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/xen.svg" ] []
+  image [ x <| toPixelXString position, y <| toPixelYString position, width "50", height "50", xlinkHref "resources/xen.svg" ] []
 
 infrastructureAt : List Infrastructure -> Position -> Maybe Infrastructure
 infrastructureAt infrastructure position =

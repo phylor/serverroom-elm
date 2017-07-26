@@ -34,14 +34,10 @@ styl =
   Svg.Attributes.style
 
 renderBackground =
-  rect [ width "500", height "500", styl "fill: rgb(200, 200, 200)" ] []
+  rect [ width "500", height "520", styl "fill: rgb(200, 200, 200)" ] []
 
 renderPlayer playerPosition =
-  let
-    playerX = (first playerPosition - 1) * 50
-    playerY = (second playerPosition - 1) * 50
-  in
-    image [ x <| toString (playerX + 2), y <| toString (playerY + 2), width "45", height "45", xlinkHref "resources/engineer.svg" ] []
+  image [ x <| toString <| (toPixelX playerPosition) + 2, y <| toString <| (toPixelY playerPosition) + 2, width "45", height "45", xlinkHref "resources/engineer.svg" ] []
 
 installDialog : GameModel Msg -> GameModel Msg
 installDialog model =
@@ -71,8 +67,9 @@ movePlayerUp model =
 movePlayerRight model =
   { model | playerPosition = Player.moveRight model.playerPosition }
 
-renderGame model =
+renderGame model settings =
   [ renderBackground
+  , renderWindow "[b]: build rack [w]: build workspace [i]: install/inspect" 0 0 500 20
   , Grid.render
   , renderInfrastructure model.infrastructure
   , renderPlayer model.playerPosition
