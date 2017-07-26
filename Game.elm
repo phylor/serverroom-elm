@@ -119,7 +119,11 @@ update msg model =
 
     PressesKey 66 ->
       if model.money >= costToBuildRack then
-        { model | infrastructure = buildRack model.infrastructure model.playerPosition, money = model.money - costToBuildRack }
+        case infrastructureAt model.infrastructure model.playerPosition of
+          Just _ ->
+            model
+          Nothing ->
+            { model | infrastructure = buildRack model.infrastructure model.playerPosition, money = model.money - costToBuildRack }
       else
         model
 
@@ -142,7 +146,11 @@ update msg model =
           model
 
     PressesKey 87 -> -- w
-      { model | infrastructure = buildWorkplace model.infrastructure model.playerPosition, money = model.money - 5000 }
+      case infrastructureAt model.infrastructure model.playerPosition of
+        Just _ ->
+          model
+        Nothing ->
+          { model | infrastructure = buildWorkplace model.infrastructure model.playerPosition, money = model.money - 5000 }
 
     InstallLinux position ->
       { model | infrastructure = install Linux model.infrastructure position, dialog = Nothing }
