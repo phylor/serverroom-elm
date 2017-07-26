@@ -27,7 +27,6 @@ type alias GameModel messageType =
   , money : Int
   , dialog : Maybe (Dialog messageType)
   , date : Date
-  , clients : List Client
   }
 
 styl =
@@ -163,19 +162,13 @@ update msg model =
 
     ProceedToNextDay ->
       let
-        newClients = processClients model
+        newInfrastructure = addClient model.infrastructure
         newMoney = processMoney model
       in
-        { model | date = nextDay model.date, clients = newClients, money = newMoney }
+        { model | date = nextDay model.date, infrastructure = newInfrastructure, money = newMoney }
 
     PressesKey _ ->
       model
 
     _ ->
       model
-
-processClients model =
-  if numberOfMaxClients model.infrastructure > List.length model.clients then
-    Client :: model.clients
-  else
-    model.clients

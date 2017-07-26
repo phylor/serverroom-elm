@@ -7,6 +7,7 @@ import Tuple exposing (first, second)
 import SimulationDay exposing (..)
 import Tui exposing (..)
 import Financial exposing (..)
+import Infrastructure exposing (..)
 
 renderStats model =
   g []
@@ -20,7 +21,7 @@ renderStats model =
           , ("Racks", numberOfRacks model.infrastructure)
           , ("Workplaces", numberOfWorkplaces model.infrastructure)
           , ("Support staff", numberOfSupportStaff model.infrastructure)
-          , ("Clients", List.length model.clients)
+          , ("Clients", numberOfClients model.infrastructure)
           , ("Max. Clients", numberOfMaxClients model.infrastructure)
           ]
         )

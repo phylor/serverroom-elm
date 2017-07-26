@@ -11,6 +11,7 @@ type Infrastructure = Rack RackInfo
 type alias RackInfo =
   { position : Position
   , system : Maybe OperatingSystem
+  , client : Int
   }
 
 type alias WorkplaceInfo =
@@ -39,7 +40,7 @@ install system infrastructure position =
 
 buildRack : List Infrastructure -> Position -> List Infrastructure
 buildRack infrastructure position =
-  (Rack <| RackInfo position Nothing) :: infrastructure
+  (Rack <| RackInfo position Nothing 0) :: infrastructure
 
 buildWorkplace infrastructure position =
   (Workplace <| WorkplaceInfo position Nothing) :: infrastructure
@@ -191,3 +192,61 @@ hasSupportStaff infrastructure =
       False
     Workplace info ->
       info.staff == Just Support
+
+addClient infrastructure =
+  case (List.head <| List.filter hasRoomForClients (racks infrastructure)) of
+    Just infra ->
+      case infra of
+        Rack info ->
+          updateInfrastructure infrastructure <| Rack { info | client = info.client + 1 }
+        Workplace _ ->
+          infrastructure
+    Nothing ->
+      infrastructure
+
+numberOfMaxClients infrastructure =
+  List.sum <| List.map maxClients <| racks infrastructure
+
+maxClients infrastructure =
+  case infrastructure of
+    Rack info ->
+      case info.system of
+        Just system ->
+          case system of
+            Linux ->
+              42
+            Windows ->
+              42
+            Xen ->
+              840
+        Nothing ->
+          0
+    Workplace _ ->
+      0
+
+numberOfClients infrastructure =
+  List.sum <| List.map countClients infrastructure
+
+countClients infrastructure =
+  case infrastructure of
+    Rack info ->
+      info.client
+    Workplace _ ->
+      0
+
+hasRoomForClients infrastructure =
+  case infrastructure of
+    Rack info ->
+      info.client < maxClients infrastructure
+    Workplace _ ->
+      False
+
+hasClient query infrastructure =
+  case infrastructure of
+    Rack info ->
+      if query then
+        info.client > 0
+      else
+        info.client <= 0
+    Workplace _ ->
+      False

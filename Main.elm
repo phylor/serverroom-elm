@@ -54,7 +54,7 @@ startingDate =
       Date.fromTime 0
 
 init =
-  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 500000 Nothing startingDate []) defaultSettings Nothing, Cmd.none )
+  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 500000 Nothing startingDate) defaultSettings Nothing, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =

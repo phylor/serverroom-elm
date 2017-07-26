@@ -71,23 +71,3 @@ numberOfWorkplaces infrastructure =
 
 numberOfSupportStaff infrastructure =
   List.length <| supportStaff infrastructure 
-
-numberOfMaxClients infrastructure =
-  List.sum <| List.map maxClients <| racks infrastructure
-
-maxClients infrastructure =
-  case infrastructure of
-    Rack info ->
-      case info.system of
-        Just system ->
-          case system of
-            Linux ->
-              42
-            Windows ->
-              42
-            Xen ->
-              840
-        Nothing ->
-          0
-    Workplace _ ->
-      0
