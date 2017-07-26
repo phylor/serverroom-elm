@@ -20,6 +20,7 @@ renderStats model =
           , ("Racks", numberOfRacks model.infrastructure)
           , ("Workplaces", numberOfWorkplaces model.infrastructure)
           , ("Support staff", numberOfSupportStaff model.infrastructure)
+          , ("Clients", List.length model.clients)
           ]
         )
     ]
