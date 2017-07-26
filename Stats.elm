@@ -21,6 +21,7 @@ renderStats model =
           , ("Workplaces", numberOfWorkplaces model.infrastructure)
           , ("Support staff", numberOfSupportStaff model.infrastructure)
           , ("Clients", List.length model.clients)
+          , ("Max. Clients", numberOfMaxClients model.infrastructure)
           ]
         )
     ]

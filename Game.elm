@@ -175,7 +175,7 @@ update msg model =
       model
 
 processClients model =
-  if 20 * List.length (racks model.infrastructure) > List.length model.clients then
+  if numberOfMaxClients model.infrastructure > List.length model.clients then
     Client :: model.clients
   else
     model.clients
