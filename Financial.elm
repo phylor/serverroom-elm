@@ -53,11 +53,11 @@ turnoverFor infrastructure =
         Just system ->
           case system of
             Linux ->
-              1200
+              info.client * 25
             Windows ->
-              20000
+              info.client * 480
             Xen ->
-              800
+              info.client * 20
         Nothing ->
           0
     Workplace info ->
