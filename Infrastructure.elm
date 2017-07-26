@@ -56,6 +56,12 @@ costToBuildRack =
 costToBuildLinux =
   15000
 
+costToBuildXen =
+  0
+
+repeatingCostsForWindows =
+  5000
+
 turnoverLinux =
   1200
 

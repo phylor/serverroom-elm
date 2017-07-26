@@ -50,13 +50,6 @@ renderStats model =
     , text_ [ x "525", y "80", Svg.Attributes.style "fill: rgb(224, 224, 246)" ] [ text <| toString <| List.length model.clients ]
     ]
 
-renderDialog model =
-  case model.dialog of
-    Just dialog ->
-      renderDialogAt dialog
-    Nothing ->
-      g [] []
-
 styl =
   Svg.Attributes.style
 
@@ -72,7 +65,19 @@ renderPlayer playerPosition =
 
 installDialog : GameModel Msg -> GameModel Msg
 installDialog model =
-  { model | dialog = Just <| Dialog "Which operating system do you want to install?" (Menu [] (MenuOption "Linux" (InstallLinux model.playerPosition)) [ MenuOption "Windows" (InstallWindows model.playerPosition), MenuOption "Xen" (InstallXen model.playerPosition) ] ) }
+  { model | dialog = Just <|
+            Dialog "Which operating system do you want to install?"
+              (Menu []
+                ( MenuOption (operatingSystemLabel "Linux: $" costToBuildLinux) <| InstallLinux model.playerPosition )
+                [ MenuOption (operatingSystemLabel "Windows: repeating $" repeatingCostsForWindows) (InstallWindows model.playerPosition)
+                , MenuOption (operatingSystemLabel "Xen: $" costToBuildXen) (InstallXen model.playerPosition)
+                ]
+              )
+  }
+
+operatingSystemLabel : String -> Int -> String
+operatingSystemLabel name costs =
+  name ++ (toString costs)
 
 movePlayerLeft model =
   { model | playerPosition = Player.moveLeft model.playerPosition }
@@ -220,7 +225,7 @@ repeatingCostForSystem system =
         Linux ->
           0
         Windows ->
-          5000
+          repeatingCostsForWindows
         Xen ->
           0
     Nothing ->
