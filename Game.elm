@@ -65,52 +65,6 @@ renderStats model =
     , text_ [ x "525", y "80", Svg.Attributes.style "fill: rgb(224, 224, 246)" ] [ text <| toString <| List.length model.clients ]
     ]
 
-renderInfrastructure infrastructure =
-  g []
-    [ renderDoorway
-    , g []
-      (List.concat [renderServers infrastructure, renderWorkspaces infrastructure])
-    ]
-
-renderWorkspaces infrastructure =
-  (List.filter (\item -> item.object == Workspace) infrastructure |> List.map (\item ->
-    image [ x <| toPixelX item.position, y <| toPixelY item.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
-  ))
-
-renderServers infrastructure =
-  (List.filter (\item -> item.object == Server) infrastructure |> List.map (\item ->
-    case item.system of
-      Just Linux ->
-        g []
-          [ renderServer item.position
-          , renderLinux item.position
-          ]
-      Just Windows ->
-        g []
-          [ renderServer item.position
-          , renderWindows item.position
-          ]
-      Just Xen ->
-        g []
-          [ renderServer item.position
-          , renderXen item.position
-          ]
-      Nothing ->
-        renderServer item.position
-  ))
-
-renderServer position =
-  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/server.svg" ] []
-
-renderLinux position =
-  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/linux.svg" ] []
-
-renderWindows position =
-  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/windows.svg" ] []
-
-renderXen position =
-  image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/xen.svg" ] []
-
 renderDialog model =
   case model.dialog of
     Just dialog ->
@@ -197,8 +151,8 @@ update msg model =
       movePlayerDown model
 
     PressesKey 66 ->
-      if model.money >= 20000 then
-        { model | infrastructure = buildServer model.infrastructure model.playerPosition Nothing, money = model.money - 20000 }
+      if model.money >= costToBuildRack then
+        { model | infrastructure = buildRack model.infrastructure model.playerPosition, money = model.money - costToBuildRack }
       else
         model
 
@@ -213,7 +167,7 @@ update msg model =
           model
 
     PressesKey 87 -> -- w
-      { model | infrastructure = buildWorkspace model.infrastructure model.playerPosition, money = model.money - 5000 }
+      { model | infrastructure = buildWorkplace model.infrastructure model.playerPosition, money = model.money - 5000 }
 
     InstallLinux position ->
       { model | infrastructure = install Linux model.infrastructure position, dialog = Nothing }
@@ -250,9 +204,6 @@ processClients model =
   else
     model.clients
 
-serverPrice =
-  1
-
 -- usually 1 rack = 42U
 -- 1 rack of servers (hardware): $100'000
 -- linux: $350 for installation -> $15'000 per rack
@@ -272,13 +223,20 @@ processMoney model =
   model.money - costs model + turnover model
 
 costs model =
-  List.sum <| List.map (\infrastructure -> costForRack + costForInstallation infrastructure) model.infrastructure
+  List.sum <| List.map (\infrastructure -> repeatingCostsFor infrastructure) model.infrastructure
 
 turnover model =
   List.sum <| List.map (\infrastructure -> turnoverFor infrastructure) model.infrastructure
 
-costForInstallation infrastructure =
-  case infrastructure.system of
+repeatingCostsFor infrastructure =
+  case infrastructure of
+    Rack info ->
+      repeatingCostForRack + repeatingCostForSystem info.system
+    Workplace info ->
+      500
+
+repeatingCostForSystem system =
+  case system of
     Just system ->
       case system of
         Linux ->
@@ -291,38 +249,18 @@ costForInstallation infrastructure =
       0
 
 turnoverFor infrastructure =
-  case infrastructure.system of
-    Just system ->
-      case system of
-        Linux ->
-          1200
-        Windows ->
-          20000
-        Xen ->
-          800
-    Nothing ->
+  case infrastructure of
+    Rack info ->
+      case info.system of
+        Just system ->
+          case system of
+            Linux ->
+              1200
+            Windows ->
+              20000
+            Xen ->
+              800
+        Nothing ->
+          0
+    Workplace info ->
       0
-
-costForRack =
-  500
-
-costToBuildRack =
-  100000
-
-costToBuildLinux =
-  15000
-
-turnoverLinux =
-  1200
-
-turnoverWindows =
-  20000
-
-turnoverXen =
-  800
-
-buildWorkspace infrastructure position =
-  (Infrastructure Workspace position Nothing) :: infrastructure
-
-renderDoorway =
-  image [ x <| toPixelX (5,1), y <| toPixelY (5,1), width "100", height "50", xlinkHref "resources/doorway.svg" ] []
