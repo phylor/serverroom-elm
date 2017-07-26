@@ -13,6 +13,7 @@ import Player
 import Grid
 import Tui exposing (..)
 import SimulationDay exposing (..)
+import Staff exposing (..)
 
 type alias Client =
   {
@@ -147,7 +148,15 @@ update msg model =
         model
 
     PressesKey 73 ->
-      installDialog model
+      case infrastructureAt model.infrastructure model.playerPosition of
+        Just infra ->
+          case infra of
+            Rack info ->
+              installDialog model
+            Workplace info ->
+              { model | infrastructure = hire Support model.infrastructure model.playerPosition }
+        Nothing ->
+          model
 
     PressesKey 13 -> -- Enter
       case model.dialog of

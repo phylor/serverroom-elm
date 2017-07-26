@@ -85,8 +85,15 @@ renderInfra infrastructure =
     Workplace info ->
       renderWorkplace info
 
-renderWorkplace item =
-  image [ x <| toPixelX item.position, y <| toPixelY item.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
+renderWorkplace workplaceInfo =
+  case workplaceInfo.staff of
+    Just staff ->
+      g []
+        [ image [ x <| toPixelX workplaceInfo.position, y <| toPixelY workplaceInfo.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
+        , image [ x <| toPixelX workplaceInfo.position, y <| toPixelY workplaceInfo.position, width "50", height "50", xlinkHref "resources/support.svg" ] []
+        ]
+    Nothing ->
+      image [ x <| toPixelX workplaceInfo.position, y <| toPixelY workplaceInfo.position, width "50", height "50", xlinkHref "resources/workspace.svg" ] []
 
 renderRack infrastructure =
   case infrastructure.system of
@@ -120,3 +127,36 @@ renderWindows position =
 renderXen position =
   image [ x <| toPixelX position, y <| toPixelY position, width "50", height "50", xlinkHref "resources/xen.svg" ] []
 
+infrastructureAt : List Infrastructure -> Position -> Maybe Infrastructure
+infrastructureAt infrastructure position =
+  List.head <| List.filter (infrastructureFilter position) infrastructure
+
+infrastructureFilter : Position -> Infrastructure -> Bool
+infrastructureFilter position infrastructure =
+  case infrastructure of
+    Rack info ->
+      info.position == position
+    Workplace info ->
+      info.position == position
+
+updateInfrastructure : List Infrastructure -> Infrastructure -> List Infrastructure
+updateInfrastructure infrastructure updatedInfrastructure =
+  let
+    position = case updatedInfrastructure of
+                 Rack info ->
+                   info.position
+                 Workplace info ->
+                   info.position
+  in
+    List.map (\item -> case item of 
+                         Rack info ->
+                           if info.position == position then
+                             updatedInfrastructure
+                           else
+                             Rack info
+                         Workplace info ->
+                           if info.position == position then
+                             updatedInfrastructure
+                           else
+                             Workplace info
+             ) infrastructure
