@@ -14,9 +14,11 @@ import Dialog exposing (..)
 import Game exposing (..)
 import Player exposing (moveLeft, moveUp, moveRight, moveDown)
 import Tui exposing (..)
+import GameOver exposing (..)
 
 type State = MenuState
            | PlayingState
+           | GameOverState
 
 type alias Settings =
   { width : Int
@@ -41,7 +43,7 @@ graphicsMenu settings =
   Menu [] (MenuOption ("Width: " ++ (toString <| settings.width)) ChangeWidth) [ MenuOption ("Height: " ++ (toString <| settings.height)) ChangeHeight, MenuOption "back" SettingsMenu ]
 
 defaultSettings =
-  Settings 640 480
+  Settings 640 500
 
 startingDate : Date
 startingDate =
@@ -125,6 +127,8 @@ update msg model =
                   ( model, Cmd.none )
                 PlayingState ->
                   ( { model | game = Game.update msg model.game }, Cmd.none )
+                GameOverState ->
+                  ( model, Cmd.none )
 
     PressesKey 38 -> -- Arrow Up
       case model.state of
@@ -137,6 +141,8 @@ update msg model =
 
         PlayingState ->
           ( { model | game = Game.update msg model.game }, Cmd.none )
+        GameOverState ->
+          ( model, Cmd.none )
 
     PressesKey 40 -> -- Arrow Down
       case model.state of
@@ -149,9 +155,18 @@ update msg model =
 
         PlayingState ->
           ( { model | game = Game.update msg model.game }, Cmd.none )
+        GameOverState ->
+          ( model, Cmd.none )
 
     Tick time ->
-      update ProceedToNextDay model
+      let
+        updated = update ProceedToNextDay model
+        newModel = first updated
+      in
+        if isGameOver newModel then
+          ( { newModel | state = GameOverState }, second updated )
+        else
+          updated
 
     _ ->
       case model.state of
@@ -159,9 +174,11 @@ update msg model =
           ( model, Cmd.none )
         PlayingState ->
           ( { model | game = Game.update msg model.game }, Cmd.none )
+        GameOverState ->
+          ( model, Cmd.none )
 
 view model =
-  svg [ width <| toString <| model.settings.width, height "500" ]
+  svg [ width <| toString <| model.settings.width, height <| toString <| model.settings.height ]
     (case model.state of
       MenuState ->
         [ renderWindow "Server Room" 0 0 model.settings.width 500
@@ -180,6 +197,8 @@ view model =
         ]
       PlayingState ->
         renderGame model.game
+      GameOverState ->
+        [renderGameOver model.settings]
     )
 
 subscriptions model =
