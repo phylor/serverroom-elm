@@ -19,6 +19,7 @@ import GameOver exposing (..)
 type State = MenuState
            | PlayingState
            | GameOverState
+           | PauseState
 
 type alias Settings =
   { width : Int
@@ -31,6 +32,7 @@ type alias Model =
   , game : GameModel Msg
   , settings : Settings
   , activeForm : Maybe (Form Msg)
+  , activeDialog : Maybe (Dialog Msg)
   }
 
 mainMenu =
@@ -54,7 +56,7 @@ startingDate =
       Date.fromTime 0
 
 init =
-  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 500000 Nothing startingDate) defaultSettings Nothing, Cmd.none )
+  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 500000 Nothing startingDate) defaultSettings Nothing Nothing, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
@@ -122,13 +124,22 @@ update msg model =
             Just form ->
               update (form.action form.currentValue) { model | activeForm = Nothing }
             Nothing ->
-              case model.state of
-                MenuState ->
-                  ( model, Cmd.none )
-                PlayingState ->
-                  ( { model | game = Game.update msg model.game }, Cmd.none )
-                GameOverState ->
-                  ( model, Cmd.none )
+              case model.activeDialog of
+                Just dialog ->
+                  -- Only used for pausing at the moment
+                  ( { model | activeDialog = Nothing, state = PlayingState }, Cmd.none )
+                
+                Nothing ->
+                  case model.state of
+                    MenuState ->
+                      ( model, Cmd.none )
+                    PlayingState ->
+                      ( { model | game = Game.update msg model.game }, Cmd.none )
+                    GameOverState ->
+                      ( model, Cmd.none )
+
+                    PauseState ->
+                      ( model, Cmd.none )
 
     PressesKey 38 -> -- Arrow Up
       case model.state of
@@ -142,6 +153,8 @@ update msg model =
         PlayingState ->
           ( { model | game = Game.update msg model.game }, Cmd.none )
         GameOverState ->
+          ( model, Cmd.none )
+        PauseState ->
           ( model, Cmd.none )
 
     PressesKey 40 -> -- Arrow Down
@@ -158,6 +171,9 @@ update msg model =
         GameOverState ->
           ( model, Cmd.none )
 
+        PauseState ->
+          ( model, Cmd.none )
+
     Tick time ->
       let
         updated = update ProceedToNextDay model
@@ -168,6 +184,15 @@ update msg model =
         else
           updated
 
+    PressesKey 80 -> -- P
+      if model.state == PlayingState then
+        ( { model | activeDialog = Just <| Dialog "Game paused" (Menu [] (MenuOption "Continue" Unpause) []), state = PauseState }, Cmd.none )
+      else
+        ( model, Cmd.none )
+
+    Unpause ->
+       ( { model | activeDialog = Nothing, state = PlayingState }, Cmd.none )
+
     _ ->
       case model.state of
         MenuState ->
@@ -175,6 +200,9 @@ update msg model =
         PlayingState ->
           ( { model | game = Game.update msg model.game }, Cmd.none )
         GameOverState ->
+          ( model, Cmd.none )
+
+        PauseState ->
           ( model, Cmd.none )
 
 view model =
@@ -199,6 +227,15 @@ view model =
         renderGame model.game model.settings
       GameOverState ->
         [renderGameOver model.settings]
+      PauseState ->
+        case model.activeDialog of
+          Just dialog ->
+            [ (g [] <| renderGame model.game model.settings)
+            , renderDialogAt dialog
+            ]
+
+          Nothing ->
+            []
     )
 
 subscriptions model =

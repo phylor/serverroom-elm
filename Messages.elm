@@ -22,3 +22,4 @@ type Msg = PressesKey Keyboard.KeyCode -- for KeyCodes check https://www.w3.org/
          | SaveHeight String
          | ProceedToNextDay
          | Tick Time
+         | Unpause

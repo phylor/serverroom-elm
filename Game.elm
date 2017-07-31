@@ -68,7 +68,7 @@ movePlayerRight model =
 
 renderGame model settings =
   [ renderBackground
-  , renderWindow "[b]: build rack [w]: build workspace [i]: install/inspect" 0 0 500 20
+  , renderWindow "[b]: build rack [w]: build workspace [i]: install/inspect [p]: pause" 0 0 500 20
   , Grid.render
   , renderInfrastructure model.infrastructure
   , renderPlayer model.playerPosition
