@@ -8,6 +8,7 @@ import SimulationDay exposing (..)
 import Tui exposing (..)
 import Financial exposing (..)
 import Infrastructure exposing (..)
+import Support exposing (..)
 
 renderStats model =
   g []
@@ -20,9 +21,10 @@ renderStats model =
           , ("Turnover", turnover model)
           , ("Racks", numberOfRacks model.infrastructure)
           , ("Workplaces", numberOfWorkplaces model.infrastructure)
-          , ("Support staff", numberOfSupportStaff model.infrastructure)
+          , ("Support Staff", numberOfSupportStaff model.infrastructure)
           , ("Clients", numberOfClients model.infrastructure)
           , ("Max. Clients", numberOfMaxClients model.infrastructure)
+          , ("Support Requests", model.supportRequests)
           ]
         )
     ]

@@ -24,3 +24,6 @@ hire staffType infrastructure position =
         updateInfrastructure infrastructure workplace
       Nothing ->
         infrastructure
+
+numberOfCasesHandledByASupportStaff =
+  5

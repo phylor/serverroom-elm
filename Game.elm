@@ -27,6 +27,7 @@ type alias GameModel messageType =
   , money : Int
   , dialog : Maybe (Dialog messageType)
   , date : Date
+  , supportRequests : Int
   }
 
 styl =

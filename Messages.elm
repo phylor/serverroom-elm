@@ -24,3 +24,4 @@ type Msg = PressesKey Keyboard.KeyCode -- for KeyCodes check https://www.w3.org/
          | Tick Time
          | Unpause
          | CancelDialog
+         | RandomSupportRequests Float
