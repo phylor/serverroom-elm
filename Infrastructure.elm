@@ -139,6 +139,16 @@ infrastructureAt : List Infrastructure -> Position -> Maybe Infrastructure
 infrastructureAt infrastructure position =
   List.head <| List.filter (infrastructureFilter position) infrastructure
 
+positionOf : Infrastructure -> Position
+positionOf infrastructure =
+  case infrastructure of
+    Rack info ->
+      info.position
+    Workplace info ->
+      info.position
+    Doorway info ->
+      info.positionLeft
+
 infrastructureFilter : Position -> Infrastructure -> Bool
 infrastructureFilter position infrastructure =
   case infrastructure of
@@ -300,7 +310,13 @@ canBuildAt infrastructure position =
     Just _ ->
       False
     Nothing ->
-      True
+      let
+        newInfrastructure = buildRack infrastructure position
+      in
+        if allHaveFreeNeighbors newInfrastructure then
+          True
+        else
+          False
 
 demand model =
   -- TODO: replace by a smart formula
@@ -308,3 +324,30 @@ demand model =
 
 numberOfClientsToAdd model =
   ceiling <| 0.2 * (toFloat <| (demand model - numberOfClients model.infrastructure))
+
+countFreeNeighbors infrastructure position =
+  let
+    neighborPositions = [ topOf position
+                        , leftOf position
+                        , rightOf position
+                        , bottomOf position
+                        ]
+    neighbors = List.filterMap (toInfrastructure infrastructure) neighborPositions
+    neighborCount = List.length <| List.filterMap identity neighbors
+  in
+    List.length neighbors - neighborCount
+
+hasFreeNeighbors infrastructure position =
+  countFreeNeighbors infrastructure position >= 1
+
+toInfrastructure infrastructure position =
+  case position of
+    Just position ->
+      Just <| infrastructureAt infrastructure position
+    Nothing ->
+      Nothing
+
+allHaveFreeNeighbors infrastructure =
+  List.all ((==) True)
+    <| List.map (hasFreeNeighbors infrastructure)
+    <| List.map positionOf infrastructure

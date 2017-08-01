@@ -20,3 +20,27 @@ toPixelXString position =
 toPixelYString : Position -> String
 toPixelYString position =
   toString <| toPixelY position
+
+topOf (x, y) =
+  if y <= 1 then
+    Nothing
+  else
+    Just <| (x, y - 1)
+
+bottomOf (x, y) =
+  if y >= 10 then
+    Nothing
+  else
+    Just <| (x, y + 1)
+
+leftOf (x, y) =
+  if x <= 1 then
+    Nothing
+  else
+    Just <| (x - 1, y)
+
+rightOf (x, y) =
+  if x >= 10 then
+    Nothing
+  else
+    Just <| (x + 1, y)
