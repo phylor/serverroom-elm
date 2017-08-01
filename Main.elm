@@ -217,7 +217,10 @@ update msg model =
         if isGameOver newModel then
           ( { newModel | state = GameOverState }, second updated )
         else
-          ( newModel, Random.generate RandomSupportRequests randomSupportRequests ) 
+          if model.state == PauseState then
+            ( newModel, Cmd.none )
+          else
+            ( newModel, Random.generate RandomSupportRequests randomSupportRequests ) 
 
     PressesKey 80 -> -- P
       if model.state == PlayingState then
