@@ -212,12 +212,27 @@ hasSupportStaff infrastructure =
     Doorway info ->
       False
 
-addClient infrastructure =
+addClient model infrastructure =
+  if demand model > numberOfClients infrastructure then
+    addOrFillRackWithClient model infrastructure <| numberOfClientsToAdd model
+  else
+    infrastructure
+
+addOrFillRackWithClient model infrastructure clientsToAdd =
   case (List.head <| List.filter hasRoomForClients (racks infrastructure)) of
     Just infra ->
       case infra of
         Rack info ->
-          updateInfrastructure infrastructure <| Rack { info | client = info.client + 1 }
+          let
+            freeSlots = maxClients infra - info.client
+            overfilledSlots = clientsToAdd - freeSlots
+            slotsToAdd = Basics.min freeSlots clientsToAdd
+            newInfrastructure = updateInfrastructure infrastructure <| Rack { info | client = info.client + slotsToAdd }
+          in
+            if overfilledSlots > 0 then
+              addOrFillRackWithClient model newInfrastructure overfilledSlots
+            else
+              newInfrastructure
         Workplace _ ->
           infrastructure
         Doorway _ ->
@@ -286,3 +301,10 @@ canBuildAt infrastructure position =
       False
     Nothing ->
       True
+
+demand model =
+  -- TODO: replace by a smart formula
+  numberOfMaxClients model.infrastructure
+
+numberOfClientsToAdd model =
+  ceiling <| 0.2 * (toFloat <| (demand model - numberOfClients model.infrastructure))

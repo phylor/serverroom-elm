@@ -164,7 +164,7 @@ update msg model =
 
     ProceedToNextDay ->
       let
-        newInfrastructure = addClient model.infrastructure
+        newInfrastructure = addClient model model.infrastructure
         newMoney = processMoney model
       in
         { model | date = nextDay model.date, infrastructure = newInfrastructure, money = newMoney }
