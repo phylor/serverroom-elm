@@ -46,7 +46,7 @@ installDialog model =
                 ( MenuOption (operatingSystemLabel "Linux: $" costToBuildLinux) <| InstallLinux model.playerPosition )
                 [ MenuOption (operatingSystemLabel "Windows: repeating $" repeatingCostsForWindows) (InstallWindows model.playerPosition)
                 , MenuOption (operatingSystemLabel "Xen: $" costToBuildXen) (InstallXen model.playerPosition)
-                , MenuOption "cancel" CancelDialog
+                , MenuOption "Cancel" CancelDialog
                 ]
               )
   }

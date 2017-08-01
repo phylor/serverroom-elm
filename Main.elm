@@ -64,10 +64,10 @@ update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =
   case msg of
     NewGame ->
-      ( { model | state = PlayingState }, Cmd.none )
+      ( { model | activeUi = Nothing, state = PlayingState }, Cmd.none )
 
     MainMenu ->
-      ( { model | activeUi = Just mainMenu }, Cmd.none )
+      init
 
     SettingsMenu ->
       ( { model | activeUi = Just settingsMenu }, Cmd.none )
@@ -108,14 +108,28 @@ update msg model =
         Just menu ->
           ( { model | activeUi = Just <| menuMoveUp menu }, Cmd.none )
         Nothing ->
-          ( model, Cmd.none )
+          case model.activeDialog of
+            Just dialog ->
+              let
+                newDialog = { dialog | menu = menuMoveUp dialog.menu }
+              in
+                ( { model | activeDialog = Just newDialog }, Cmd.none )
+            Nothing ->
+              ( model, Cmd.none )
 
     MenuMoveDown ->
       case model.activeUi of
         Just menu ->
           ( { model | activeUi = Just <| menuMoveDown menu }, Cmd.none )
         Nothing ->
-          ( model, Cmd.none )
+          case model.activeDialog of
+            Just dialog ->
+              let
+                newDialog = { dialog | menu = menuMoveDown dialog.menu }
+              in
+                ( { model | activeDialog = Just newDialog }, Cmd.none )
+            Nothing ->
+              ( model, Cmd.none )
 
     PressesKey 13 -> -- Enter
       case model.activeUi of
@@ -128,9 +142,7 @@ update msg model =
             Nothing ->
               case model.activeDialog of
                 Just dialog ->
-                  -- Only used for pausing at the moment
-                  ( { model | activeDialog = Nothing, state = PlayingState }, Cmd.none )
-                
+                  update dialog.menu.selectedOption.action model
                 Nothing ->
                   case model.state of
                     MenuState ->
@@ -154,10 +166,15 @@ update msg model =
 
         PlayingState ->
           ( { model | game = Game.update msg model.game }, Cmd.none )
+
         GameOverState ->
           ( model, Cmd.none )
         PauseState ->
-          ( model, Cmd.none )
+          case model.activeDialog of
+            Just dialog ->
+              update MenuMoveUp model
+            Nothing ->
+              ( model, Cmd.none )
 
     PressesKey 40 -> -- Arrow Down
       case model.state of
@@ -166,7 +183,11 @@ update msg model =
             Just ui ->
               update MenuMoveDown model
             Nothing ->
-              ( model, Cmd.none )
+              case model.activeDialog of
+                Just dialog ->
+                  update MenuMoveDown model
+                Nothing ->
+                  ( model, Cmd.none )
 
         PlayingState ->
           ( { model | game = Game.update msg model.game }, Cmd.none )
@@ -174,7 +195,11 @@ update msg model =
           ( model, Cmd.none )
 
         PauseState ->
-          ( model, Cmd.none )
+          case model.activeDialog of
+            Just dialog ->
+              update MenuMoveDown model
+            Nothing ->
+              ( model, Cmd.none )
 
     Tick time ->
       let
@@ -188,7 +213,13 @@ update msg model =
 
     PressesKey 80 -> -- P
       if model.state == PlayingState then
-        ( { model | activeDialog = Just <| Dialog "Game paused" (Menu [] (MenuOption "Continue" Unpause) []), state = PauseState }, Cmd.none )
+        ( { model | activeDialog = Just <| pauseDialog, state = PauseState }, Cmd.none )
+      else
+        ( model, Cmd.none )
+
+    PressesKey 27 -> -- Esc
+      if model.state == PlayingState then
+        ( { model | activeDialog = Just <| pauseDialog, state = PauseState }, Cmd.none )
       else
         ( model, Cmd.none )
 
@@ -206,6 +237,13 @@ update msg model =
 
         PauseState ->
           ( model, Cmd.none )
+
+pauseDialog =
+  Dialog "Game paused" <|
+    Menu
+      [ MenuOption "Exit to Main Menu" MainMenu]
+      (MenuOption "Continue" Unpause)
+      []
 
 view model =
   svg [ width <| toString <| model.settings.width, height <| toString <| model.settings.height ]
