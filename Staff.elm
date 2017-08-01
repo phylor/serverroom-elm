@@ -14,6 +14,8 @@ hire staffType infrastructure position =
                            Nothing
                          Workplace info ->
                            Just <| Workplace <| WorkplaceInfo position <| Just staffType
+                         Doorway info ->
+                           Nothing
                      Nothing ->
                        Nothing
   in

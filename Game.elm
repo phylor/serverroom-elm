@@ -116,17 +116,16 @@ update msg model =
     PressesKey 74 ->
       movePlayerDown model
 
-    PressesKey 66 ->
+    PressesKey 66 -> -- B
       if model.money >= costToBuildRack then
-        case infrastructureAt model.infrastructure model.playerPosition of
-          Just _ ->
-            model
-          Nothing ->
-            { model | infrastructure = buildRack model.infrastructure model.playerPosition, money = model.money - costToBuildRack }
+        if canBuildAt model.infrastructure model.playerPosition then
+          { model | infrastructure = buildRack model.infrastructure model.playerPosition, money = model.money - costToBuildRack }
+        else
+          model
       else
         model
 
-    PressesKey 73 ->
+    PressesKey 73 -> -- I
       case infrastructureAt model.infrastructure model.playerPosition of
         Just infra ->
           case infra of
@@ -134,6 +133,8 @@ update msg model =
               installDialog model
             Workplace info ->
               { model | infrastructure = hire Support model.infrastructure model.playerPosition }
+            Doorway info ->
+              model
         Nothing ->
           model
 

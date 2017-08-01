@@ -15,6 +15,8 @@ import Game exposing (..)
 import Player exposing (moveLeft, moveUp, moveRight, moveDown)
 import Tui exposing (..)
 import GameOver exposing (..)
+import Infrastructure exposing (..)
+import Position exposing (..)
 
 type State = MenuState
            | PlayingState
@@ -56,7 +58,7 @@ startingDate =
       Date.fromTime 0
 
 init =
-  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [] 500000 Nothing startingDate) defaultSettings Nothing Nothing, Cmd.none )
+  ( Model MenuState (Just mainMenu) (GameModel (1, 1) [Doorway <| DoorwayInfo (5, 1) (6, 1)] 500000 Nothing startingDate) defaultSettings Nothing Nothing, Cmd.none )
 
 update : Msg -> Model -> ( Model, Cmd Msg)
 update msg model =

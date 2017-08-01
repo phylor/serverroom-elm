@@ -32,6 +32,8 @@ repeatingCostsFor infrastructure =
       repeatingCostForRack + repeatingCostForSystem info.system
     Workplace info ->
       500
+    Doorway info ->
+      0
 
 repeatingCostForSystem system =
   case system of
@@ -61,6 +63,8 @@ turnoverFor infrastructure =
         Nothing ->
           0
     Workplace info ->
+      0
+    Doorway info ->
       0
 
 numberOfRacks infrastructure =

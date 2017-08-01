@@ -7,6 +7,7 @@ import Position exposing (..)
 
 type Infrastructure = Rack RackInfo
                     | Workplace WorkplaceInfo
+                    | Doorway DoorwayInfo
 
 type alias RackInfo =
   { position : Position
@@ -17,6 +18,11 @@ type alias RackInfo =
 type alias WorkplaceInfo =
   { position : Position
   , staff : Maybe Staff
+  }
+
+type alias DoorwayInfo =
+  { positionLeft : Position
+  , positionRight : Position
   }
 
 type Staff = Support
@@ -36,6 +42,8 @@ install system infrastructure position =
                   Rack info
               Workplace info ->
                 Workplace info
+              Doorway info ->
+                Doorway info
            ) infrastructure
 
 buildRack : List Infrastructure -> Position -> List Infrastructure
@@ -45,8 +53,8 @@ buildRack infrastructure position =
 buildWorkplace infrastructure position =
   (Workplace <| WorkplaceInfo position Nothing) :: infrastructure
 
-renderDoorway =
-  image [ x <| toPixelXString (5,1), y <| toPixelYString (5,1), width "100", height "50", xlinkHref "resources/doorway.svg" ] []
+renderDoorway info =
+  image [ x <| toPixelXString info.positionLeft, y <| toPixelYString info.positionLeft, width "100", height "50", xlinkHref "resources/doorway.svg" ] []
 
 repeatingCostForRack =
   500
@@ -74,10 +82,7 @@ turnoverXen =
 
 renderInfrastructure infrastructure =
   g []
-    [ renderDoorway
-    , g []
-      (List.map renderInfra infrastructure)
-    ]
+    (List.map renderInfra infrastructure)
 
 renderInfra infrastructure =
   case infrastructure of
@@ -85,6 +90,8 @@ renderInfra infrastructure =
       renderRack info
     Workplace info ->
       renderWorkplace info
+    Doorway info ->
+      renderDoorway info
 
 renderWorkplace workplaceInfo =
   case workplaceInfo.staff of
@@ -139,6 +146,8 @@ infrastructureFilter position infrastructure =
       info.position == position
     Workplace info ->
       info.position == position
+    Doorway info ->
+      info.positionLeft == position || info.positionRight == position
 
 updateInfrastructure : List Infrastructure -> Infrastructure -> List Infrastructure
 updateInfrastructure infrastructure updatedInfrastructure =
@@ -148,6 +157,8 @@ updateInfrastructure infrastructure updatedInfrastructure =
                    info.position
                  Workplace info ->
                    info.position
+                 Doorway info ->
+                   info.positionLeft
   in
     List.map (\item -> case item of 
                          Rack info ->
@@ -160,6 +171,8 @@ updateInfrastructure infrastructure updatedInfrastructure =
                              updatedInfrastructure
                            else
                              Workplace info
+                         Doorway info ->
+                           Doorway info
              ) infrastructure
 
 racks infrastructure =
@@ -170,6 +183,8 @@ isRack infrastructure =
     Rack _ ->
       True
     Workplace _ ->
+      False
+    Doorway _ ->
       False
 
 
@@ -182,6 +197,8 @@ isWorkplace infrastructure =
       False
     Workplace _ ->
       True
+    Doorway _ ->
+      False
 
 supportStaff infrastructure =
   List.filter hasSupportStaff <| workplaces infrastructure
@@ -192,6 +209,8 @@ hasSupportStaff infrastructure =
       False
     Workplace info ->
       info.staff == Just Support
+    Doorway info ->
+      False
 
 addClient infrastructure =
   case (List.head <| List.filter hasRoomForClients (racks infrastructure)) of
@@ -200,6 +219,8 @@ addClient infrastructure =
         Rack info ->
           updateInfrastructure infrastructure <| Rack { info | client = info.client + 1 }
         Workplace _ ->
+          infrastructure
+        Doorway _ ->
           infrastructure
     Nothing ->
       infrastructure
@@ -223,6 +244,8 @@ maxClients infrastructure =
           0
     Workplace _ ->
       0
+    Doorway _ ->
+      0
 
 numberOfClients infrastructure =
   List.sum <| List.map countClients infrastructure
@@ -233,12 +256,16 @@ countClients infrastructure =
       info.client
     Workplace _ ->
       0
+    Doorway _ ->
+      0
 
 hasRoomForClients infrastructure =
   case infrastructure of
     Rack info ->
       info.client < maxClients infrastructure
     Workplace _ ->
+      False
+    Doorway _ ->
       False
 
 hasClient query infrastructure =
@@ -250,3 +277,12 @@ hasClient query infrastructure =
         info.client <= 0
     Workplace _ ->
       False
+    Doorway _ ->
+      False
+
+canBuildAt infrastructure position =
+  case infrastructureAt infrastructure position of
+    Just _ ->
+      False
+    Nothing ->
+      True
